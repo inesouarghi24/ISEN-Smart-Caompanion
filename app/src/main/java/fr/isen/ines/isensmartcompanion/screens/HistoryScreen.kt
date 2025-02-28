@@ -1,4 +1,4 @@
-package fr.isen.ines.isensmartcompanion.ui.screens
+package fr.isen.ines.isensmartcompanion.screens
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -21,13 +21,13 @@ fun HistoryScreenView() {
         verticalArrangement = Arrangement.Center
     ) {
         Text(
-            text = "Historique des événements",
+            text = "Historique des questions et réponses donner par IA",
             style = MaterialTheme.typography.headlineMedium.copy(fontWeight = FontWeight.Bold),
             color = Color(0xFFFF69B4)
         )
         Spacer(modifier = Modifier.height(16.dp))
         Text(
-            text = "Aucun événement passé pour le moment.",
+            text = "Aucunes Question/ réponses pout le moment.",
             style = MaterialTheme.typography.bodyMedium,
             color = Color.Gray
         )

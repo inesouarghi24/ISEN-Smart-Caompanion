@@ -66,6 +66,9 @@ dependencies {
     implementation (libs.generativeai)
     implementation (libs.androidx.room.runtime)
     implementation (libs.androidx.lifecycle.viewmodel.ktx)
+    implementation(libs.coil.compose)
+
+
 }
 
 

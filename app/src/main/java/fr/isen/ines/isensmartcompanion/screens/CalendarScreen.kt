@@ -49,13 +49,15 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavHostController
+import fr.isen.ines.isensmartcompanion.screens.NavBarItem
 import java.time.LocalDate
 import java.time.YearMonth
 
 @RequiresApi(Build.VERSION_CODES.O)
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun CalendarScreen() {
+fun CalendarScreen(navController: NavHostController, navBarItems: List<NavBarItem>) {
     val events = remember { mutableStateMapOf<LocalDate, MutableList<String>>() }
     var newEvent by remember { mutableStateOf(TextFieldValue("")) }
     val selectedDate = remember { mutableStateOf(LocalDate.now()) }

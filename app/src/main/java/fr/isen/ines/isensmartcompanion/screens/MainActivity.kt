@@ -2,11 +2,13 @@ package fr.isen.ines.isensmartcompanion.screens
 
 import android.content.Context
 import android.content.Intent
+import android.os.Build
 import android.os.Bundle
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.annotation.RequiresApi
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -29,17 +31,18 @@ import androidx.navigation.compose.rememberNavController
 import fr.isen.ines.isensmartcompanion.ui.screens.CalendarScreen
 import fr.isen.ines.isensmartcompanion.ui.screens.HomeScreenView
 import fr.isen.ines.isensmartcompanion.ui.screens.EventsScreen
-import fr.isen.ines.isensmartcompanion.ui.screens.HistoryScreenView
+import fr.isen.ines.isensmartcompanion.ui.screens.SettingsScreen
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
-            MainApp()
+
         }
     }
 }
+@RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun MainApp() {
     val navController = rememberNavController()
@@ -55,7 +58,10 @@ fun MainApp() {
             composable("home") { HomeScreenView() }
             composable("history") { HistoryScreenView() }
             composable("events") { EventsScreen() }
-            composable("calendar") { CalendarScreen() }
+            composable("calendar") { CalendarScreen(navController, navBarItems) }
+            composable("settings") { SettingsScreen() }
+
+
         }
     }
 }

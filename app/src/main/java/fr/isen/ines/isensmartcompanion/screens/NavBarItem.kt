@@ -31,7 +31,7 @@ val navBarItems = listOf(
     ),
     NavBarItem(
         route = "events",
-        title = "Événements",
+        title = "évenement",
         selectedIcon = Icons.Filled.Notifications,
         unselectedIcon = Icons.Outlined.Notifications
 
