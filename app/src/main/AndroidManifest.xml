@@ -2,6 +2,7 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
 
+    <uses-permission android:name="android.permission.INTERNET" />
     <application
         android:allowBackup="true"
         android:dataExtractionRules="@xml/data_extraction_rules"
@@ -12,8 +13,18 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.ISENSmartCompanion"
         tools:targetApi="31">
+
+        <meta-data
+            android:name="com.google.ai.API_KEY"
+            android:value="AIzaSyCTsJYprRSiRj0Ialfc0hGqNPvzDLFZ6cA" />
+
         <activity
-            android:name=".MainActivity"
+            android:name=".screens.EventDetailActivity"
+            android:exported="false"
+            android:label="@string/title_activity_event_detail"
+            android:theme="@style/Theme.ISENSmartCompanion" />
+        <activity
+            android:name=".screens.MainActivity"
             android:exported="true"
             android:label="@string/app_name"
             android:theme="@style/Theme.ISENSmartCompanion">

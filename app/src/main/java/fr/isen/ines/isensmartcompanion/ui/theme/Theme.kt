@@ -3,6 +3,7 @@ package fr.isen.ines.isensmartcompanion.ui.theme
 import android.app.Activity
 import android.os.Build
 import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.material3.ColorScheme
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.dynamicDarkColorScheme
@@ -55,4 +56,8 @@ fun ISENSmartCompanionTheme(
         typography = Typography,
         content = content
     )
+}
+
+fun MaterialTheme(colorScheme: ColorScheme, typography: Typography, content: @Composable () -> Unit) {
+    TODO("Not yet implemented")
 }

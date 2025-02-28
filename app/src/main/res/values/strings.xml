@@ -1,3 +1,14 @@
 <resources>
     <string name="app_name">ISENSmartCompanion</string>
+    <string name="isenlogo">ISEN Logo</string>
+    <string name="title_activity_event_detail">EventDetailActivity</string>
+    <string name="home" />
+    <string name="events" />
+    <string name="history" />
+    <string name="bottom_navbar_home" />
+    <string name="bottom_navbar_events" />
+    <string name="bottom_navbar_history" />
+    <string name="hellokitty">hello kitty logo </string>
+
+
 </resources>
