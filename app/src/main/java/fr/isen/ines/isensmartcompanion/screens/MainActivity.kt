@@ -26,6 +26,7 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import fr.isen.ines.isensmartcompanion.ui.screens.CalendarScreen
 import fr.isen.ines.isensmartcompanion.ui.screens.HomeScreenView
 import fr.isen.ines.isensmartcompanion.ui.screens.EventsScreen
 import fr.isen.ines.isensmartcompanion.ui.screens.HistoryScreenView
@@ -54,7 +55,7 @@ fun MainApp() {
             composable("home") { HomeScreenView() }
             composable("history") { HistoryScreenView() }
             composable("events") { EventsScreen() }
-            composable("calendar") { CalendarScreen(navController, navBarItems) }
+            composable("calendar") { CalendarScreen() }
         }
     }
 }
