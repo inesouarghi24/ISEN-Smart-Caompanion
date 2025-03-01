@@ -22,28 +22,33 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
-import androidx.navigation.NavHostController
+import androidx.lifecycle.viewmodel.compose.viewModel
 import fr.isen.ines.isensmartcompanion.ui.screens.EventCard
-import fr.isen.ines.isensmartcompanion.screens.EventsViewModel
 import java.time.LocalDate
 import java.time.YearMonth
 import java.util.UUID
 
-@RequiresApi(Build.VERSION_CODES.O)
 @OptIn(ExperimentalMaterial3Api::class)
+@RequiresApi(Build.VERSION_CODES.O)
 @Composable
-fun CalendarScreen(navController: NavHostController, viewModel: EventsViewModel = remember { EventsViewModel() }) {
-    val events by viewModel.events.collectAsState()
+fun <NavHostController> CalendarScreen(navController: NavHostController, viewModel: EventsViewModel = viewModel()) {
+    val events by viewModel.events.collectAsState(initial = emptyList())
+
     val eventMap = remember(events) {
-        events.groupBy { LocalDate.parse(it.date) }
+        events.groupBy {
+            try {
+                LocalDate.parse(it.date)
+            } catch (e: Exception) {
+                LocalDate.now()
+            }
+        }
     }
 
     val context = LocalContext.current
     var selectedDate by remember { mutableStateOf(LocalDate.now()) }
     var currentMonth by remember { mutableStateOf(YearMonth.now()) }
-    val daysInMonth = remember { mutableStateOf((1..currentMonth.lengthOfMonth()).map { currentMonth.atDay(it) }) }
+    var daysInMonth by remember { mutableStateOf((1..currentMonth.lengthOfMonth()).map { currentMonth.atDay(it) }) }
 
-    // Stockage des événements ajoutés par l'utilisateur
     var newEventTitle by remember { mutableStateOf(TextFieldValue("")) }
     var newEventLocation by remember { mutableStateOf(TextFieldValue("")) }
     var userEvents by remember { mutableStateOf(mutableMapOf<LocalDate, MutableList<EventModel>>()) }
@@ -67,7 +72,6 @@ fun CalendarScreen(navController: NavHostController, viewModel: EventsViewModel 
                 .padding(16.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            // Navigation entre les mois
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.SpaceBetween,
@@ -75,26 +79,25 @@ fun CalendarScreen(navController: NavHostController, viewModel: EventsViewModel 
             ) {
                 IconButton(onClick = {
                     currentMonth = currentMonth.minusMonths(1)
-                    daysInMonth.value = (1..currentMonth.lengthOfMonth()).map { currentMonth.atDay(it) }
+                    daysInMonth = (1..currentMonth.lengthOfMonth()).map { currentMonth.atDay(it) }
                 }) {
                     Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Mois précédent")
                 }
                 Text("${currentMonth.month.name} ${currentMonth.year}")
                 IconButton(onClick = {
                     currentMonth = currentMonth.plusMonths(1)
-                    daysInMonth.value = (1..currentMonth.lengthOfMonth()).map { currentMonth.atDay(it) }
+                    daysInMonth = (1..currentMonth.lengthOfMonth()).map { currentMonth.atDay(it) }
                 }) {
                     Icon(Icons.AutoMirrored.Filled.ArrowForward, contentDescription = "Mois suivant")
                 }
             }
 
-            // Affichage du calendrier
             LazyVerticalGrid(
                 columns = GridCells.Fixed(7),
                 modifier = Modifier.fillMaxWidth()
             ) {
-                items(daysInMonth.value.size) { index ->
-                    val day = daysInMonth.value[index]
+                items(daysInMonth.size) { index ->
+                    val day = daysInMonth[index]
                     val hasEvent = eventMap.containsKey(day) || userEvents.containsKey(day)
 
                     Box(
@@ -123,7 +126,6 @@ fun CalendarScreen(navController: NavHostController, viewModel: EventsViewModel 
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Affichage des événements API isen deja mis
             val apiEventsForSelectedDay = eventMap[selectedDate] ?: emptyList()
             if (apiEventsForSelectedDay.isNotEmpty()) {
                 Text("📅 Événements officiels :", style = MaterialTheme.typography.titleMedium, color = Color(0xFFD81B60))
@@ -136,7 +138,6 @@ fun CalendarScreen(navController: NavHostController, viewModel: EventsViewModel 
                 }
             }
 
-            // Affichage des événements personnalisés quon peut ajouter nous memes la
             val userEventsForSelectedDay = userEvents[selectedDate] ?: emptyList()
             if (userEventsForSelectedDay.isNotEmpty()) {
                 Text("📝 Événements personnels :", style = MaterialTheme.typography.titleMedium, color = Color(0xFF00796B))
@@ -161,7 +162,6 @@ fun CalendarScreen(navController: NavHostController, viewModel: EventsViewModel 
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Ajouter un événement
             Text("Ajouter un événement :", style = MaterialTheme.typography.titleMedium)
             OutlinedTextField(
                 value = newEventTitle,

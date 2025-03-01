@@ -14,9 +14,10 @@ interface ChatHistoryDao {
     @Query("SELECT * FROM chat_history ORDER BY date DESC")
     fun getAllMessages(): Flow<List<ChatHistoryEntity>>
 
+    @Query("DELETE FROM chat_history WHERE id = :messageId")
+    suspend fun deleteMessage(messageId: Int)
+
     @Query("DELETE FROM chat_history")
     suspend fun clearHistory()
 
-    @Query("DELETE FROM chat_history WHERE id = :messageId")
-    suspend fun deleteMessage(messageId: Int)
 }
