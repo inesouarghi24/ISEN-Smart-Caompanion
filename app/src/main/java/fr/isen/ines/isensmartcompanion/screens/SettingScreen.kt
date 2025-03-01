@@ -17,7 +17,8 @@ import androidx.compose.ui.unit.dp
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun SettingsScreen(themeViewModel: ThemeViewModel = viewModel()) {
+
+fun SettingsScreen(themeViewModel: ThemeViewModel) {
     val isDarkMode by themeViewModel.isDarkMode.collectAsState(initial = false)
     var notificationsEnabled by remember { mutableStateOf(true) }
     var privacyEnabled by remember { mutableStateOf(false) }

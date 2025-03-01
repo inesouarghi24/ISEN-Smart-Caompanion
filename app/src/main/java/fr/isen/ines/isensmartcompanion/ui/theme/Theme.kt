@@ -20,10 +20,11 @@ private val LightColorScheme = lightColorScheme(
 
 @Composable
 fun ISENSmartCompanionTheme(
-    darkTheme: Boolean, // On récupère le mode sombre de Settings
+    darkTheme: Boolean = false,
     dynamicColor: Boolean = true,
     content: @Composable () -> Unit
 ) {
+
     val colorScheme = when {
         dynamicColor && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S -> {
             val context = LocalContext.current

@@ -5,6 +5,9 @@
     <uses-permission android:name="android.permission.INTERNET"/>
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
 
+    <uses-permission android:name="android.permission.WRITE_SETTINGS"/>
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
 
     <application
         android:allowBackup="true"
@@ -21,9 +24,7 @@
             android:name="com.google.ai.API_KEY"
             android:value="@string/gemini_api_key" />
 
-
-
-        <!-- 📌 Splash Screen  -->
+        <!--  Splash Screen Hello Kitty) -->
         <activity
             android:name=".screens.SplashActivity"
             android:exported="true"
@@ -34,19 +35,23 @@
             </intent-filter>
         </activity>
 
-        <!-- 📌 Écran des détails d'un event -->
+
         <activity
             android:name=".screens.EventDetailActivity"
             android:exported="false"
             android:label="@string/title_activity_event_detail"
             android:theme="@style/Theme.ISENSmartCompanion" />
 
-        <!-- 📌 Écran principal de l'application après mon splash screen hello kitty -->
+        <!-- Écran principal de l'application après mon Splash Screen hello kityy -->
         <activity
             android:name=".screens.MainActivity"
             android:exported="true"
             android:label="@string/app_name"
             android:theme="@style/Theme.ISENSmartCompanion">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
         </activity>
 
     </application>

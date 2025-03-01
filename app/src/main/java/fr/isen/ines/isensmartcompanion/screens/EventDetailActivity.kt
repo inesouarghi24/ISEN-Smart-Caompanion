@@ -4,6 +4,7 @@ import android.net.Uri
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.activity.viewModels
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -33,6 +34,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.rememberAsyncImagePainter
 import fr.isen.ines.isensmartcompanion.ui.theme.ISENSmartCompanionTheme
@@ -47,7 +49,9 @@ class EventDetailActivity : ComponentActivity() {
         val eventLocation = intent.getStringExtra("eventLocation") ?: "Lieu inconnu"
 
         setContent {
-            val themeViewModel: ThemeViewModel = viewModel()
+            val themeViewModel: ThemeViewModel = ViewModelProvider(
+                this, ThemeViewModelFactory(applicationContext)
+            )[ThemeViewModel::class.java]
             val isDarkMode by themeViewModel.isDarkMode.collectAsState(initial = false)
 
             ISENSmartCompanionTheme(darkTheme = isDarkMode) {

@@ -68,6 +68,8 @@ dependencies {
     implementation (libs.androidx.lifecycle.viewmodel.ktx)
     implementation(libs.coil.compose)
     implementation(libs.androidx.datastore.preferences)
+    implementation (libs.androidx.datastore.preferences.v100)
+
 
 
 }
