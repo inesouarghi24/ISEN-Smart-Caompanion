@@ -1,12 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <!-- Thème principal de l'application -->
     <style name="Theme.ISENSmartCompanion" parent="android:Theme.Material.Light.NoActionBar">
-        <!-- Désactive le Splash Screen natif sur Android 12+ -->
         <item name="android:windowSplashScreenBackground">@color/white</item>
         <item name="android:windowSplashScreenAnimatedIcon">@null</item>
         <item name="android:windowSplashScreenAnimationDuration">0</item>
     </style>
-
 </resources>
