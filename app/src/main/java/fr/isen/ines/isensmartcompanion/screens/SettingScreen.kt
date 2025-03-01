@@ -1,4 +1,4 @@
-package fr.isen.ines.isensmartcompanion.ui.screens
+package fr.isen.ines.isensmartcompanion.screens
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -24,7 +24,7 @@ fun SettingsScreen() {
     var privacyEnabled by remember { mutableStateOf(false) }
     var selectedLanguage by remember { mutableStateOf("Français") }
 
-    val languages = listOf("Français", "Anglais", "Espagnol")
+    val languages = listOf("Français", "Anglais", "Espagnol", "Italien", "Allemand")
 
     Scaffold(
         topBar = {

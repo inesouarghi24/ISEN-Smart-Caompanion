@@ -1,4 +1,5 @@
 package fr.isen.ines.isensmartcompanion.screens
+import fr.isen.ines.isensmartcompanion.screens.CalendarScreen
 
 import android.content.Context
 import android.content.Intent
@@ -11,13 +12,32 @@ import androidx.activity.enableEdgeToEdge
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.DateRange
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextField
+import androidx.compose.material3.TextFieldDefaults
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.MutableState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -28,20 +48,21 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import fr.isen.ines.isensmartcompanion.ui.screens.CalendarScreen
-import fr.isen.ines.isensmartcompanion.ui.screens.HomeScreenView
 import fr.isen.ines.isensmartcompanion.ui.screens.EventsScreen
-import fr.isen.ines.isensmartcompanion.ui.screens.SettingsScreen
 
 class MainActivity : ComponentActivity() {
+    @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
-        setContent {
+            setContent {
+                MainApp()
+            }
+
 
         }
     }
-}
+
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun MainApp() {
@@ -55,10 +76,11 @@ fun MainApp() {
             startDestination = "home",
             modifier = Modifier.padding(paddingValues)
         ) {
-            composable("home") { HomeScreenView() }
+            composable("home") { HomeScreenView(navController) }
             composable("history") { HistoryScreenView() }
             composable("events") { EventsScreen() }
-            composable("calendar") { CalendarScreen(navController, navBarItems) }
+            composable("calendar") { CalendarScreen(navController, viewModel = EventsViewModel()) }
+
             composable("settings") { SettingsScreen() }
 
 

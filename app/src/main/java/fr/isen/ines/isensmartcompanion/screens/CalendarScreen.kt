@@ -1,48 +1,21 @@
-package fr.isen.ines.isensmartcompanion.ui.screens
+package fr.isen.ines.isensmartcompanion.screens
 
 import android.os.Build
-import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material.icons.filled.ArrowForward
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.material3.TextFieldDefaults
-import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.TopAppBarDefaults
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateMapOf
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.ArrowForward
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -50,20 +23,34 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
-import fr.isen.ines.isensmartcompanion.screens.NavBarItem
+import fr.isen.ines.isensmartcompanion.ui.screens.EventCard
+import fr.isen.ines.isensmartcompanion.screens.EventsViewModel
 import java.time.LocalDate
 import java.time.YearMonth
+import java.util.UUID
 
 @RequiresApi(Build.VERSION_CODES.O)
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun CalendarScreen(navController: NavHostController, navBarItems: List<NavBarItem>) {
-    val events = remember { mutableStateMapOf<LocalDate, MutableList<String>>() }
-    var newEvent by remember { mutableStateOf(TextFieldValue("")) }
-    val selectedDate = remember { mutableStateOf(LocalDate.now()) }
+fun CalendarScreen(navController: NavHostController, viewModel: EventsViewModel = remember { EventsViewModel() }) {
+    val events by viewModel.events.collectAsState()
+    val eventMap = remember(events) {
+        events.groupBy { LocalDate.parse(it.date) }
+    }
+
     val context = LocalContext.current
+    var selectedDate by remember { mutableStateOf(LocalDate.now()) }
     var currentMonth by remember { mutableStateOf(YearMonth.now()) }
     val daysInMonth = remember { mutableStateOf((1..currentMonth.lengthOfMonth()).map { currentMonth.atDay(it) }) }
+
+    // Stockage des événements ajoutés par l'utilisateur
+    var newEventTitle by remember { mutableStateOf(TextFieldValue("")) }
+    var newEventLocation by remember { mutableStateOf(TextFieldValue("")) }
+    var userEvents by remember { mutableStateOf(mutableMapOf<LocalDate, MutableList<EventModel>>()) }
+
+    LaunchedEffect(Unit) {
+        viewModel.fetchEvents()
+    }
 
     Scaffold(
         topBar = {
@@ -80,6 +67,7 @@ fun CalendarScreen(navController: NavHostController, navBarItems: List<NavBarIte
                 .padding(16.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
+            // Navigation entre les mois
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.SpaceBetween,
@@ -89,92 +77,125 @@ fun CalendarScreen(navController: NavHostController, navBarItems: List<NavBarIte
                     currentMonth = currentMonth.minusMonths(1)
                     daysInMonth.value = (1..currentMonth.lengthOfMonth()).map { currentMonth.atDay(it) }
                 }) {
-                    Icon(Icons.Filled.ArrowBack, contentDescription = "Mois précédent")
+                    Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Mois précédent")
                 }
-                Text(currentMonth.month.name + " " + currentMonth.year)
+                Text("${currentMonth.month.name} ${currentMonth.year}")
                 IconButton(onClick = {
                     currentMonth = currentMonth.plusMonths(1)
                     daysInMonth.value = (1..currentMonth.lengthOfMonth()).map { currentMonth.atDay(it) }
                 }) {
-                    Icon(Icons.Filled.ArrowForward, contentDescription = "Mois suivant")
+                    Icon(Icons.AutoMirrored.Filled.ArrowForward, contentDescription = "Mois suivant")
                 }
             }
 
+            // Affichage du calendrier
             LazyVerticalGrid(
                 columns = GridCells.Fixed(7),
                 modifier = Modifier.fillMaxWidth()
             ) {
                 items(daysInMonth.value.size) { index ->
                     val day = daysInMonth.value[index]
+                    val hasEvent = eventMap.containsKey(day) || userEvents.containsKey(day)
+
                     Box(
                         modifier = Modifier
                             .size(40.dp)
                             .background(
-                                if (day == selectedDate.value) Color(0xFFFF69B4) else Color.Transparent,
+                                if (day == selectedDate) Color(0xFFFF69B4) else Color.Transparent,
                                 shape = RoundedCornerShape(50)
                             )
-                            .clickable { selectedDate.value = day },
+                            .clickable { selectedDate = day },
                         contentAlignment = Alignment.Center
                     ) {
-                        Text(text = day.dayOfMonth.toString(), color = Color.Black)
+                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                            Text(text = day.dayOfMonth.toString(), color = Color.Black)
+                            if (hasEvent) {
+                                Box(
+                                    modifier = Modifier
+                                        .size(6.dp)
+                                        .background(Color(0xFFFF69B4), shape = RoundedCornerShape(50))
+                                )
+                            }
+                        }
                     }
                 }
             }
 
             Spacer(modifier = Modifier.height(16.dp))
+
+            // **Affichage des événements API**
+            val apiEventsForSelectedDay = eventMap[selectedDate] ?: emptyList()
+            if (apiEventsForSelectedDay.isNotEmpty()) {
+                Text("📅 Événements officiels :", style = MaterialTheme.typography.titleMedium, color = Color(0xFFD81B60))
+                LazyColumn(
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    items(apiEventsForSelectedDay) { event ->
+                        EventCard(event, context)
+                    }
+                }
+            }
+
+            // **Affichage des événements personnalisés**
+            val userEventsForSelectedDay = userEvents[selectedDate] ?: emptyList()
+            if (userEventsForSelectedDay.isNotEmpty()) {
+                Text("📝 Événements personnels :", style = MaterialTheme.typography.titleMedium, color = Color(0xFF00796B))
+                LazyColumn(
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    items(userEventsForSelectedDay) { event ->
+                        EventCard(event, context)
+                        Button(
+                            onClick = {
+                                userEvents[selectedDate]?.remove(event)
+                                userEvents = userEvents.toMutableMap()
+                            },
+                            colors = ButtonDefaults.buttonColors(containerColor = Color.Red),
+                            modifier = Modifier.fillMaxWidth().padding(8.dp)
+                        ) {
+                            Text("Supprimer", color = Color.White)
+                        }
+                    }
+                }
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // Ajouter un événement
+            Text("Ajouter un événement :", style = MaterialTheme.typography.titleMedium)
             OutlinedTextField(
-                value = newEvent,
-                onValueChange = { newEvent = it },
-                label = { Text("Ajouter un cours ou événement") },
-                colors = TextFieldDefaults.outlinedTextFieldColors(focusedBorderColor = Color(0xFFFF69B4))
+                value = newEventTitle,
+                onValueChange = { newEventTitle = it },
+                label = { Text("Titre de l'événement") },
+                modifier = Modifier.fillMaxWidth()
             )
-            Spacer(modifier = Modifier.height(8.dp))
+            OutlinedTextField(
+                value = newEventLocation,
+                onValueChange = { newEventLocation = it },
+                label = { Text("Lieu de l'événement") },
+                modifier = Modifier.fillMaxWidth().padding(top = 8.dp)
+            )
 
             Button(
                 onClick = {
-                    if (newEvent.text.isNotEmpty()) {
-                        events.getOrPut(selectedDate.value) { mutableListOf() }.add(newEvent.text)
-                        newEvent = TextFieldValue("")
-                    } else {
-                        Toast.makeText(context, "Entrez un nom pour l'événement", Toast.LENGTH_SHORT).show()
+                    if (newEventTitle.text.isNotEmpty()) {
+                        val newEvent = EventModel(
+                            id = UUID.randomUUID().toString(),
+                            title = newEventTitle.text,
+                            date = selectedDate.toString(),
+                            description = "Événement ajouté par l'utilisateur",
+                            location = newEventLocation.text,
+                            category = "Personnalisé"
+                        )
+                        userEvents[selectedDate] = (userEvents[selectedDate] ?: mutableListOf()).apply { add(newEvent) }
+                        newEventTitle = TextFieldValue("")
+                        newEventLocation = TextFieldValue("")
                     }
                 },
-                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFFF69B4))
+                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFFF69B4)),
+                modifier = Modifier.fillMaxWidth().padding(top = 8.dp)
             ) {
                 Text("Ajouter", color = Color.White)
-            }
-
-            Spacer(modifier = Modifier.height(16.dp))
-            LazyColumn(
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                items(events[selectedDate.value] ?: emptyList()) { event ->
-                    EventItem(event) {
-                        events[selectedDate.value]?.remove(event)
-                    }
-                }
-            }
-        }
-    }
-}
-
-@Composable
-fun EventItem(event: String, onDelete: () -> Unit) {
-    Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(8.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.White),
-        shape = RoundedCornerShape(16.dp)
-    ) {
-        Row(
-            modifier = Modifier.padding(16.dp),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Text(text = event, style = MaterialTheme.typography.bodyLarge, color = Color.Black)
-            Button(onClick = onDelete, colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFFF69B4))) {
-                Text("Valider", color = Color.White)
             }
         }
     }
