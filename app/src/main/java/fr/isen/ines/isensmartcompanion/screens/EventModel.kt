@@ -1,16 +1,13 @@
 package fr.isen.ines.isensmartcompanion.screens
 
-import com.google.gson.annotations.SerializedName
+import java.util.UUID
 
 data class EventModel(
-    @SerializedName("category") val category: String,
-    @SerializedName("date") val date: String,
-    @SerializedName("description") val description: String,
-    @SerializedName("location") val location: String,
-    @SerializedName("id") val id: String,
-    @SerializedName("title") val title: String
+    val id: String = UUID.randomUUID().toString(),
+    val title: String,
+    val date: String,
+    val description: String,
+    val location: String,
+    val isCustom: Boolean = false
 )
-
-
-
 

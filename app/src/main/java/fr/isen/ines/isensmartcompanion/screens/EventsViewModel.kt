@@ -6,27 +6,29 @@ import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
-import retrofit2.Response
 
 class EventsViewModel : ViewModel() {
-
     private val _events = MutableStateFlow<List<EventModel>>(emptyList())
-    val events: StateFlow<List<EventModel>> = _events
+    val events: StateFlow<List<EventModel>> get() = _events
 
-    private val eventApi = EventApi.create()
+    init {
+        fetchEvents()
+    }
 
     fun fetchEvents() {
         viewModelScope.launch {
             try {
-                val response: Response<List<EventModel>> = eventApi.getEvents()
-                Log.d("API", "Réponse reçue: ${response.code()} - ${response.message()}")
-
+                val response = EventApi.create().getEvents()
                 if (response.isSuccessful) {
                     val data = response.body()
-                    Log.d("API", "Données reçues: $data")
-                    _events.value = data ?: emptyList()
+                    if (data != null) {
+                        _events.value = data
+                        Log.d("API", "Données reçues: $data")
+                    } else {
+                        Log.e("API", "Réponse vide")
+                    }
                 } else {
-                    Log.e("API", "Erreur HTTP: ${response.code()} - ${response.errorBody()?.string()}")
+                    Log.e("API", "Erreur HTTP: ${response.code()} ${response.message()}")
                 }
             } catch (e: Exception) {
                 Log.e("API", "Exception: ${e.message}")

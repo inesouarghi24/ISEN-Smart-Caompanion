@@ -4,44 +4,67 @@ import android.os.Build
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
-import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.ArrowForward
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import fr.isen.ines.isensmartcompanion.ui.screens.EventCard
+import androidx.navigation.NavHostController
 import java.time.LocalDate
 import java.time.YearMonth
-import java.util.UUID
 
-@OptIn(ExperimentalMaterial3Api::class)
 @RequiresApi(Build.VERSION_CODES.O)
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun <NavHostController> CalendarScreen(navController: NavHostController, viewModel: EventsViewModel = viewModel()) {
-    val events by viewModel.events.collectAsState(initial = emptyList())
+fun CalendarScreen(
+    navController: NavHostController,
+    eventsViewModel: EventsViewModel = viewModel(),
+    customEventViewModel: CustomEventViewModel = viewModel()
+) {
+    val events by eventsViewModel.events.collectAsState(initial = emptyList())
+    val customEvents by customEventViewModel.customEvents.collectAsState(initial = emptyList())
 
     val eventMap = remember(events) {
-        events.groupBy {
-            try {
-                LocalDate.parse(it.date)
-            } catch (e: Exception) {
-                LocalDate.now()
-            }
-        }
+        events.groupBy { LocalDate.parse(it.date) }
     }
 
     val context = LocalContext.current
@@ -49,12 +72,11 @@ fun <NavHostController> CalendarScreen(navController: NavHostController, viewMod
     var currentMonth by remember { mutableStateOf(YearMonth.now()) }
     var daysInMonth by remember { mutableStateOf((1..currentMonth.lengthOfMonth()).map { currentMonth.atDay(it) }) }
 
-    var newEventTitle by remember { mutableStateOf(TextFieldValue("")) }
-    var newEventLocation by remember { mutableStateOf(TextFieldValue("")) }
-    var userEvents by remember { mutableStateOf(mutableMapOf<LocalDate, MutableList<EventModel>>()) }
+    var newEventTitle by remember { mutableStateOf("") }
+    var newEventLocation by remember { mutableStateOf("") }
 
     LaunchedEffect(Unit) {
-        viewModel.fetchEvents()
+        eventsViewModel.fetchEvents()
     }
 
     Scaffold(
@@ -72,6 +94,7 @@ fun <NavHostController> CalendarScreen(navController: NavHostController, viewMod
                 .padding(16.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
+            // Navigation entre les mois
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.SpaceBetween,
@@ -92,13 +115,14 @@ fun <NavHostController> CalendarScreen(navController: NavHostController, viewMod
                 }
             }
 
+            // Affichage du calendrier
             LazyVerticalGrid(
                 columns = GridCells.Fixed(7),
                 modifier = Modifier.fillMaxWidth()
             ) {
                 items(daysInMonth.size) { index ->
                     val day = daysInMonth[index]
-                    val hasEvent = eventMap.containsKey(day) || userEvents.containsKey(day)
+                    val hasEvent = eventMap[day]?.isNotEmpty() == true || customEvents.any { it.date == day.toString() }
 
                     Box(
                         modifier = Modifier
@@ -126,42 +150,31 @@ fun <NavHostController> CalendarScreen(navController: NavHostController, viewMod
 
             Spacer(modifier = Modifier.height(16.dp))
 
+            // Affichage des événements API
             val apiEventsForSelectedDay = eventMap[selectedDate] ?: emptyList()
             if (apiEventsForSelectedDay.isNotEmpty()) {
                 Text("📅 Événements officiels :", style = MaterialTheme.typography.titleMedium, color = Color(0xFFD81B60))
-                LazyColumn(
-                    modifier = Modifier.fillMaxWidth()
-                ) {
+                LazyColumn(modifier = Modifier.fillMaxWidth()) {
                     items(apiEventsForSelectedDay) { event ->
-                        EventCard(event, context)
+                        EventCard(event)
                     }
                 }
             }
 
-            val userEventsForSelectedDay = userEvents[selectedDate] ?: emptyList()
+            // Affichage des événements personnalisés
+            val userEventsForSelectedDay = customEvents.filter { it.date == selectedDate.toString() }
             if (userEventsForSelectedDay.isNotEmpty()) {
                 Text("📝 Événements personnels :", style = MaterialTheme.typography.titleMedium, color = Color(0xFF00796B))
-                LazyColumn(
-                    modifier = Modifier.fillMaxWidth()
-                ) {
+                LazyColumn(modifier = Modifier.fillMaxWidth()) {
                     items(userEventsForSelectedDay) { event ->
-                        EventCard(event, context)
-                        Button(
-                            onClick = {
-                                userEvents[selectedDate]?.remove(event)
-                                userEvents = userEvents.toMutableMap()
-                            },
-                            colors = ButtonDefaults.buttonColors(containerColor = Color.Red),
-                            modifier = Modifier.fillMaxWidth().padding(8.dp)
-                        ) {
-                            Text("Supprimer", color = Color.White)
-                        }
+                        EventCard(event, customEventViewModel)
                     }
                 }
             }
 
             Spacer(modifier = Modifier.height(16.dp))
 
+            // Ajout d'un événement personnalisé
             Text("Ajouter un événement :", style = MaterialTheme.typography.titleMedium)
             OutlinedTextField(
                 value = newEventTitle,
@@ -178,24 +191,49 @@ fun <NavHostController> CalendarScreen(navController: NavHostController, viewMod
 
             Button(
                 onClick = {
-                    if (newEventTitle.text.isNotEmpty()) {
-                        val newEvent = EventModel(
-                            id = UUID.randomUUID().toString(),
-                            title = newEventTitle.text,
+                    if (newEventTitle.isNotEmpty()) {
+                        customEventViewModel.addCustomEvent(
+                            title = newEventTitle,
                             date = selectedDate.toString(),
                             description = "Événement ajouté par l'utilisateur",
-                            location = newEventLocation.text,
-                            category = "Personnalisé"
+                            location = newEventLocation
                         )
-                        userEvents[selectedDate] = (userEvents[selectedDate] ?: mutableListOf()).apply { add(newEvent) }
-                        newEventTitle = TextFieldValue("")
-                        newEventLocation = TextFieldValue("")
+                        newEventTitle = ""
+                        newEventLocation = ""
                     }
                 },
                 colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFFF69B4)),
                 modifier = Modifier.fillMaxWidth().padding(top = 8.dp)
             ) {
                 Text("Ajouter", color = Color.White)
+            }
+        }
+    }
+}
+
+@Composable
+fun EventCard(event: EventModel, customEventViewModel: CustomEventViewModel? = null) {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(8.dp),
+        colors = CardDefaults.cardColors(containerColor = Color.White)
+    ) {
+        Column(
+            modifier = Modifier.padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            Text(text = event.title, style = MaterialTheme.typography.titleMedium, color = Color.Black)
+            Text(text = "📅 ${event.date}", style = MaterialTheme.typography.bodyMedium, color = Color.DarkGray)
+            Text(text = "📍 ${event.location}", style = MaterialTheme.typography.bodyMedium, color = Color.DarkGray)
+
+            if (customEventViewModel != null) {
+                Button(
+                    onClick = { customEventViewModel.removeEvent(event.id) },
+                    colors = ButtonDefaults.buttonColors(containerColor = Color.Red)
+                ) {
+                    Text("Supprimer", color = Color.White)
+                }
             }
         }
     }

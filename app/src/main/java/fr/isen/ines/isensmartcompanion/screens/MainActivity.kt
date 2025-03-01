@@ -48,10 +48,10 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import fr.isen.ines.isensmartcompanion.ui.screens.EventsScreen
 import fr.isen.ines.isensmartcompanion.ui.theme.ISENSmartCompanionTheme
 import kotlinx.coroutines.launch
 
@@ -67,6 +67,9 @@ class MainActivity : ComponentActivity() {
         dao = database.chatHistoryDao()
 
         setContent {
+            val eventsViewModel: EventsViewModel = viewModel()
+            val customEventViewModel: CustomEventViewModel = viewModel()
+
             val themeViewModel: ThemeViewModel = ViewModelProvider(
                 this, ThemeViewModelFactory(applicationContext)
             )[ThemeViewModel::class.java]
@@ -85,16 +88,16 @@ class MainActivity : ComponentActivity() {
                     ) {
                         composable("home") { HomeScreenView(navController) }
                         composable("history") { HistoryScreenView() }
-                        composable("events") { EventsScreen() }
-                        composable("calendar") { CalendarScreen(navController, viewModel = EventsViewModel()) }
+                        composable("events") { EventsScreen(eventsViewModel, customEventViewModel) }
+                        composable("calendar") { CalendarScreen(navController, eventsViewModel) }
                         composable("settings") { SettingsScreen(themeViewModel) }
                     }
                 }
             }
         }
-    }
 
-    private fun saveChatToHistory(question: String, answer: String) {
+
+        fun saveChatToHistory(question: String, answer: String) {
         lifecycleScope.launch {
             dao.insertMessage(ChatHistoryEntity(question = question, answer = answer))
         }
@@ -142,6 +145,8 @@ fun SimpleBottomBar(question: MutableState<String>, onResponseChange: (String) -
 
 @Composable
 fun EventCard(event: EventModel, context: Context) {
+
+
     Card(
         shape = RoundedCornerShape(16.dp),
         elevation = CardDefaults.cardElevation(defaultElevation = 8.dp),
@@ -200,4 +205,5 @@ fun EventCard(event: EventModel, context: Context) {
             }
         }
     }
+}
 }
