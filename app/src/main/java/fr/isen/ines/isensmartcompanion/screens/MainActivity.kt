@@ -1,5 +1,6 @@
 package fr.isen.ines.isensmartcompanion.screens
 
+import HistoryScreenView
 import android.content.Context
 import android.content.Intent
 import android.os.Build
@@ -7,7 +8,6 @@ import android.os.Bundle
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.activity.viewModels
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
@@ -47,23 +47,29 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.ViewModelProvider
-import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.lifecycle.lifecycleScope
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import fr.isen.ines.isensmartcompanion.ui.screens.EventsScreen
 import fr.isen.ines.isensmartcompanion.ui.theme.ISENSmartCompanionTheme
+import kotlinx.coroutines.launch
 
 class MainActivity : ComponentActivity() {
+    private lateinit var database: AppDatabase
+    private lateinit var dao: ChatHistoryDao
+
     @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        database = AppDatabase.getDatabase(this)
+        dao = database.chatHistoryDao()
 
         setContent {
             val themeViewModel: ThemeViewModel = ViewModelProvider(
                 this, ThemeViewModelFactory(applicationContext)
             )[ThemeViewModel::class.java]
-
 
             val isDarkMode by themeViewModel.isDarkMode.collectAsState(initial = false)
             val navController = rememberNavController()
@@ -87,7 +93,14 @@ class MainActivity : ComponentActivity() {
             }
         }
     }
+
+    private fun saveChatToHistory(question: String, answer: String) {
+        lifecycleScope.launch {
+            dao.insertMessage(ChatHistoryEntity(question = question, answer = answer))
+        }
+    }
 }
+
 
 
 

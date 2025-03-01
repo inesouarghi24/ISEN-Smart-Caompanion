@@ -123,7 +123,7 @@ fun CalendarScreen(navController: NavHostController, viewModel: EventsViewModel 
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // **Affichage des événements API**
+            // Affichage des événements API isen deja mis
             val apiEventsForSelectedDay = eventMap[selectedDate] ?: emptyList()
             if (apiEventsForSelectedDay.isNotEmpty()) {
                 Text("📅 Événements officiels :", style = MaterialTheme.typography.titleMedium, color = Color(0xFFD81B60))
@@ -136,7 +136,7 @@ fun CalendarScreen(navController: NavHostController, viewModel: EventsViewModel 
                 }
             }
 
-            // **Affichage des événements personnalisés**
+            // Affichage des événements personnalisés quon peut ajouter nous memes la
             val userEventsForSelectedDay = userEvents[selectedDate] ?: emptyList()
             if (userEventsForSelectedDay.isNotEmpty()) {
                 Text("📝 Événements personnels :", style = MaterialTheme.typography.titleMedium, color = Color(0xFF00796B))
