@@ -38,7 +38,6 @@ fun CalendarScreen(
     val events by eventsViewModel.events.collectAsState(initial = emptyList())
     val customEvents by customEventViewModel.customEvents.collectAsState(initial = emptyList())
 
-    // Ajout de logs pour voir si les événements sont bien chargés
     Log.d("CalendarScreen", "Événements API chargés: $events")
     Log.d("CalendarScreen", "Événements personnalisés chargés: $customEvents")
 
@@ -48,7 +47,7 @@ fun CalendarScreen(
                 LocalDate.parse(it.date)
             } catch (e: DateTimeParseException) {
                 Log.e("CalendarScreen", "Erreur de parsing de date: ${it.date}")
-                LocalDate.now() // Évite le crash en utilisant la date actuelle
+                LocalDate.now()
             }
         }
     }
@@ -64,6 +63,7 @@ fun CalendarScreen(
     LaunchedEffect(Unit) {
         Log.d("CalendarScreen", "fetchEvents() est appelé")
         eventsViewModel.fetchEvents()
+        customEventViewModel.fetchCustomEvents()
     }
 
     Scaffold(
@@ -81,7 +81,6 @@ fun CalendarScreen(
                 .padding(16.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            // Navigation entre les mois
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.SpaceBetween,
@@ -102,11 +101,7 @@ fun CalendarScreen(
                 }
             }
 
-            // Affichage du calendrier
-            LazyVerticalGrid(
-                columns = GridCells.Fixed(7),
-                modifier = Modifier.fillMaxWidth()
-            ) {
+            LazyVerticalGrid(columns = GridCells.Fixed(7), modifier = Modifier.fillMaxWidth()) {
                 items(daysInMonth.size) { index ->
                     val day = daysInMonth[index]
                     val hasEvent = eventMap[day]?.isNotEmpty() == true || customEvents.any { it.date == day.toString() }
@@ -137,7 +132,6 @@ fun CalendarScreen(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Affichage des événements
             val apiEventsForSelectedDay = eventMap[selectedDate] ?: emptyList()
             if (apiEventsForSelectedDay.isNotEmpty()) {
                 Text("📅 Événements officiels :", style = MaterialTheme.typography.titleMedium, color = Color(0xFFD81B60))
@@ -153,14 +147,24 @@ fun CalendarScreen(
                 Text("📝 Événements personnels :", style = MaterialTheme.typography.titleMedium, color = Color(0xFF00796B))
                 LazyColumn(modifier = Modifier.fillMaxWidth()) {
                     items(userEventsForSelectedDay) { event ->
-                        EventCard(event, customEventViewModel)
+                        EventCard(
+                            event = EventModel(
+                                id = event.id.toString(),
+                                title = event.title,
+                                date = event.date,
+                                description = event.description,
+                                location = event.location,
+                                isCustom = true
+                            ),
+                            customEventViewModel = customEventViewModel
+                        )
+
                     }
                 }
             }
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Ajout d'un événement personnalisé
             Text("Ajouter un événement :", style = MaterialTheme.typography.titleMedium)
             OutlinedTextField(
                 value = newEventTitle,
@@ -215,7 +219,7 @@ fun EventCard(event: EventModel, customEventViewModel: CustomEventViewModel? = n
 
             if (customEventViewModel != null) {
                 Button(
-                    onClick = { customEventViewModel.removeEvent(event.id) },
+                    onClick = { customEventViewModel.removeEvent(event.id.toInt()) },
                     colors = ButtonDefaults.buttonColors(containerColor = Color.Red)
                 ) {
                     Text("Supprimer", color = Color.White)

@@ -1,26 +1,44 @@
 package fr.isen.ines.isensmartcompanion.screens
 
-import androidx.lifecycle.ViewModel
-import fr.isen.ines.isensmartcompanion.screens.EventModel
+import android.app.Application
+import androidx.lifecycle.AndroidViewModel
+import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.launch
 
-class CustomEventViewModel : ViewModel() {
-    private val _customEvents = MutableStateFlow<List<EventModel>>(emptyList())
-    val customEvents: StateFlow<List<EventModel>> = _customEvents.asStateFlow()
+class CustomEventViewModel(application: Application) : AndroidViewModel(application) {
+    private val dao = AppDatabase.getDatabase(application).customEventDao()
+
+    private val _customEvents = MutableStateFlow<List<CustomEventEntity>>(emptyList())
+    val customEvents: StateFlow<List<CustomEventEntity>> = _customEvents.asStateFlow()
+
+    init {
+        fetchCustomEvents()
+    }
+
+    fun fetchCustomEvents() {
+        viewModelScope.launch {
+            _customEvents.value = dao.getAllCustomEvents()
+        }
+    }
 
     fun addCustomEvent(title: String, date: String, description: String, location: String) {
-        _customEvents.value = _customEvents.value + EventModel(
-            title = title,
-            date = date,
-            description = description,
-            location = location,
-            isCustom = true
-        )
+        viewModelScope.launch {
+            val event = CustomEventEntity(title = title, date = date, description = description, location = location)
+            dao.insertCustomEvent(event)
+            fetchCustomEvents()
+        }
     }
 
-    fun removeEvent(eventId: String) {
-        _customEvents.value = _customEvents.value.filter { it.id != eventId }
+
+    fun removeEvent(eventId: Int) {
+
+        viewModelScope.launch {
+            dao.deleteEvent(eventId)
+            fetchCustomEvents() // Rafraîchit la liste après suppression
+        }
     }
 }
+

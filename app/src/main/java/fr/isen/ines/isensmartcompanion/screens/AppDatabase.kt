@@ -1,15 +1,15 @@
 package fr.isen.ines.isensmartcompanion.screens
-import fr.isen.ines.isensmartcompanion.screens.ChatHistoryEntity
 
 import android.content.Context
 import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
 
-@Database(entities = [ChatHistoryEntity::class], version = 1, exportSchema = false)
+@Database(entities = [ChatHistoryEntity::class, CustomEventEntity::class], version = 2, exportSchema = false)
 abstract class AppDatabase : RoomDatabase() {
 
     abstract fun chatHistoryDao(): ChatHistoryDao
+    abstract fun customEventDao(): CustomEventDao  // Correction ici (pas de parenthèses)
 
     companion object {
         @Volatile
