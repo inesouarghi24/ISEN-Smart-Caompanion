@@ -1,5 +1,4 @@
 package fr.isen.ines.isensmartcompanion.screens
-import fr.isen.ines.isensmartcompanion.screens.CalendarScreen
 
 import android.content.Context
 import android.content.Intent
@@ -8,7 +7,6 @@ import android.os.Bundle
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.activity.enableEdgeToEdge
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
@@ -38,6 +36,8 @@ import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -45,48 +45,48 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import fr.isen.ines.isensmartcompanion.ui.screens.EventsScreen
+import fr.isen.ines.isensmartcompanion.ui.theme.ISENSmartCompanionTheme
 
 class MainActivity : ComponentActivity() {
     @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        enableEdgeToEdge()
-            setContent {
-                MainApp()
+
+        setContent {
+            val themeViewModel: ThemeViewModel = ThemeViewModel(LocalContext.current)
+
+
+            val isDarkMode by themeViewModel.isDarkMode.collectAsState(initial = false)
+            val navController = rememberNavController()
+
+            ISENSmartCompanionTheme(darkTheme = isDarkMode) {
+                Scaffold(
+                    bottomBar = { BottomNavigationBar(navController, navBarItems) }
+                ) { paddingValues ->
+                    NavHost(
+                        navController = navController,
+                        startDestination = "home",
+                        modifier = Modifier.padding(paddingValues)
+                    ) {
+                        composable("home") { HomeScreenView(navController) }
+                        composable("history") { HistoryScreenView() }
+                        composable("events") { EventsScreen() }
+                        composable("calendar") { CalendarScreen(navController, viewModel = EventsViewModel()) }
+                        composable("settings") { SettingsScreen(themeViewModel) }
+                    }
+                }
             }
-
-
-        }
-    }
-
-@RequiresApi(Build.VERSION_CODES.O)
-@Composable
-fun MainApp() {
-    val navController = rememberNavController()
-
-    Scaffold(
-        bottomBar = { BottomNavigationBar(navController, navBarItems) }
-    ) { paddingValues ->
-        NavHost(
-            navController = navController,
-            startDestination = "home",
-            modifier = Modifier.padding(paddingValues)
-        ) {
-            composable("home") { HomeScreenView(navController) }
-            composable("history") { HistoryScreenView() }
-            composable("events") { EventsScreen() }
-            composable("calendar") { CalendarScreen(navController, viewModel = EventsViewModel()) }
-
-            composable("settings") { SettingsScreen() }
-
-
         }
     }
 }
+
+
+
 @Composable
 fun SimpleBottomBar(question: MutableState<String>, onResponseChange: (String) -> Unit) {
     val context = LocalContext.current

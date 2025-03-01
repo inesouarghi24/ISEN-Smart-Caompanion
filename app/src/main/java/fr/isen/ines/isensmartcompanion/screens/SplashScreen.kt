@@ -34,7 +34,7 @@ class SplashActivity : ComponentActivity() {
 
         setContent {
             SplashScreen {
-                // 🚀 Après 3 secondes, on passe à MainActivity
+
                 startActivity(Intent(this, MainActivity::class.java))
                 finish()
             }

@@ -1,36 +1,36 @@
 package fr.isen.ines.isensmartcompanion.screens
 
+import android.os.Build
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.AccountCircle
-import androidx.compose.material.icons.filled.List
-import androidx.compose.material.icons.filled.Notifications
-import androidx.compose.material.icons.filled.Star
+import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.compose.ui.unit.dp
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun SettingsScreen() {
-    var darkMode by remember { mutableStateOf(false) }
+fun SettingsScreen(themeViewModel: ThemeViewModel = viewModel()) {
+    val isDarkMode by themeViewModel.isDarkMode.collectAsState(initial = false)
     var notificationsEnabled by remember { mutableStateOf(true) }
     var privacyEnabled by remember { mutableStateOf(false) }
     var selectedLanguage by remember { mutableStateOf("Français") }
 
+    val iconColor = Color(0xFFFFC0CB) // Rose pastel
     val languages = listOf("Français", "Anglais", "Espagnol", "Italien", "Allemand")
 
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Paramètres") },
-                colors = TopAppBarDefaults.mediumTopAppBarColors(containerColor = Color(0xFFFFC0CB))
+                title = { Text("Paramètres", color = Color.White) },
+                colors = TopAppBarDefaults.mediumTopAppBarColors(containerColor = iconColor)
             )
         }
     ) { paddingValues ->
@@ -38,16 +38,16 @@ fun SettingsScreen() {
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues)
-                .padding(16.dp)
+                .padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
             Text("Général", style = MaterialTheme.typography.headlineSmall)
-            Spacer(modifier = Modifier.height(8.dp))
 
             SettingSwitchItem(
                 title = "Mode sombre",
                 icon = Icons.Filled.Star,
-                checked = darkMode,
-                onCheckedChange = { darkMode = it }
+                checked = isDarkMode,
+                onCheckedChange = { themeViewModel.setDarkMode(it) }
             )
 
             SettingSwitchItem(
@@ -60,7 +60,6 @@ fun SettingsScreen() {
             Divider(modifier = Modifier.padding(vertical = 8.dp))
 
             Text("Sécurité", style = MaterialTheme.typography.headlineSmall)
-            Spacer(modifier = Modifier.height(8.dp))
 
             SettingSwitchItem(
                 title = "Confidentialité",
@@ -72,7 +71,6 @@ fun SettingsScreen() {
             Divider(modifier = Modifier.padding(vertical = 8.dp))
 
             Text("Langue", style = MaterialTheme.typography.headlineSmall)
-            Spacer(modifier = Modifier.height(8.dp))
 
             SettingDropdownItem(
                 title = "Changer la langue",
@@ -91,7 +89,7 @@ fun SettingSwitchItem(title: String, icon: ImageVector, checked: Boolean, onChec
         modifier = Modifier
             .fillMaxWidth()
             .padding(8.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.White),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
         shape = RoundedCornerShape(16.dp)
     ) {
         Row(
@@ -100,20 +98,26 @@ fun SettingSwitchItem(title: String, icon: ImageVector, checked: Boolean, onChec
                 .padding(16.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Icon(icon, contentDescription = title, tint = Color(0xFFFF69B4))
+            Icon(icon, contentDescription = title, tint = Color(0xFFFFC0CB))
             Spacer(modifier = Modifier.width(12.dp))
             Text(title, modifier = Modifier.weight(1f))
             Switch(
                 checked = checked,
                 onCheckedChange = onCheckedChange,
-                colors = SwitchDefaults.colors(checkedThumbColor = Color(0xFFFF69B4))
+                colors = SwitchDefaults.colors(checkedThumbColor = Color(0xFFFFC0CB))
             )
         }
     }
 }
 
 @Composable
-fun SettingDropdownItem(title: String, icon: ImageVector, selectedValue: String, items: List<String>, onItemSelected: (String) -> Unit) {
+fun SettingDropdownItem(
+    title: String,
+    icon: ImageVector,
+    selectedValue: String,
+    items: List<String>,
+    onItemSelected: (String) -> Unit
+) {
     var expanded by remember { mutableStateOf(false) }
 
     Card(
@@ -121,7 +125,7 @@ fun SettingDropdownItem(title: String, icon: ImageVector, selectedValue: String,
             .fillMaxWidth()
             .padding(8.dp)
             .clickable { expanded = true },
-        colors = CardDefaults.cardColors(containerColor = Color.White),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
         shape = RoundedCornerShape(16.dp)
     ) {
         Row(
@@ -130,7 +134,7 @@ fun SettingDropdownItem(title: String, icon: ImageVector, selectedValue: String,
                 .padding(16.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Icon(icon, contentDescription = title, tint = Color(0xFFFF69B4))
+            Icon(icon, contentDescription = title, tint = Color(0xFFFFC0CB))
             Spacer(modifier = Modifier.width(12.dp))
             Text(title, modifier = Modifier.weight(1f))
             Text(selectedValue, color = Color.Gray)
@@ -152,4 +156,3 @@ fun SettingDropdownItem(title: String, icon: ImageVector, selectedValue: String,
         }
     }
 }
-

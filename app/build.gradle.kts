@@ -67,6 +67,7 @@ dependencies {
     implementation (libs.androidx.room.runtime)
     implementation (libs.androidx.lifecycle.viewmodel.ktx)
     implementation(libs.coil.compose)
+    implementation(libs.androidx.datastore.preferences)
 
 
 }
