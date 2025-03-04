@@ -24,7 +24,7 @@ fun SettingsScreen(themeViewModel: ThemeViewModel) {
     var privacyEnabled by remember { mutableStateOf(false) }
     var selectedLanguage by remember { mutableStateOf("Français") }
 
-    val iconColor = Color(0xFFFFC0CB) // Rose pastel
+    val iconColor = Color(0xFFFFC0CB)
     val languages = listOf("Français", "Anglais", "Espagnol", "Italien", "Allemand")
 
     Scaffold(
@@ -51,12 +51,7 @@ fun SettingsScreen(themeViewModel: ThemeViewModel) {
                 onCheckedChange = { themeViewModel.setDarkMode(it) }
             )
 
-            SettingSwitchItem(
-                title = "Notifications",
-                icon = Icons.Filled.Notifications,
-                checked = notificationsEnabled,
-                onCheckedChange = { notificationsEnabled = it }
-            )
+
 
             Divider(modifier = Modifier.padding(vertical = 8.dp))
 

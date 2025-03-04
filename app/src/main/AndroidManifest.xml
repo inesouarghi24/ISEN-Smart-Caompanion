@@ -5,9 +5,18 @@
     <uses-permission android:name="android.permission.INTERNET"/>
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
 
+
+
     <uses-permission android:name="android.permission.WRITE_SETTINGS"/>
-    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
-    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
+
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"
+        android:maxSdkVersion="32" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"
+        android:maxSdkVersion="32"
+        tools:ignore="ScopedStorage" />
+    <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM"/>
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
+
 
     <application
         android:allowBackup="true"
@@ -24,7 +33,6 @@
             android:name="com.google.ai.API_KEY"
             android:value="@string/gemini_api_key" />
 
-        <!--  Splash Screen Hello Kitty) -->
         <activity
             android:name=".screens.SplashActivity"
             android:exported="true"
@@ -35,14 +43,12 @@
             </intent-filter>
         </activity>
 
-
         <activity
             android:name=".screens.EventDetailActivity"
             android:exported="false"
             android:label="@string/title_activity_event_detail"
             android:theme="@style/Theme.ISENSmartCompanion" />
 
-        <!-- Écran principal de l'application après mon Splash Screen hello kityy -->
         <activity
             android:name=".screens.MainActivity"
             android:exported="true"
@@ -53,6 +59,26 @@
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
         </activity>
+
+        <receiver android:name=".notifications.NotificationReceiver"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED"/>
+            </intent-filter>
+        </receiver>
+
+
+
+        <receiver android:name=".notifications.NotificationReceiver"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED"/>
+            </intent-filter>
+        </receiver>
+
+        <service android:name=".notifications.NotificationService"
+            android:exported="false" />
+
 
     </application>
 

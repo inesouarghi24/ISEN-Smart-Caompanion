@@ -52,6 +52,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import fr.isen.ines.isensmartcompanion.database.AppDatabase
 import fr.isen.ines.isensmartcompanion.ui.theme.ISENSmartCompanionTheme
 import kotlinx.coroutines.launch
 
@@ -67,15 +68,15 @@ class MainActivity : ComponentActivity() {
         dao = database.chatHistoryDao()
 
         setContent {
+            val navController = rememberNavController()
+
             val eventsViewModel: EventsViewModel = viewModel()
             val customEventViewModel: CustomEventViewModel = viewModel()
-
             val themeViewModel: ThemeViewModel = ViewModelProvider(
                 this, ThemeViewModelFactory(applicationContext)
             )[ThemeViewModel::class.java]
 
             val isDarkMode by themeViewModel.isDarkMode.collectAsState(initial = false)
-            val navController = rememberNavController()
 
             ISENSmartCompanionTheme(darkTheme = isDarkMode) {
                 Scaffold(
@@ -88,21 +89,24 @@ class MainActivity : ComponentActivity() {
                     ) {
                         composable("home") { HomeScreenView(navController) }
                         composable("history") { HistoryScreenView() }
-                        composable("events") { EventsScreen(eventsViewModel, customEventViewModel) }
+                        composable("events") { EventsScreen(eventsViewModel, customEventViewModel, this@MainActivity) }
                         composable("calendar") { CalendarScreen(navController, eventsViewModel) }
                         composable("settings") { SettingsScreen(themeViewModel) }
                     }
                 }
             }
         }
+    }
 
-
-        fun saveChatToHistory(question: String, answer: String) {
+    fun saveChatToHistory(question: String, answer: String) {
         lifecycleScope.launch {
             dao.insertMessage(ChatHistoryEntity(question = question, answer = answer))
         }
     }
 }
+
+
+
 
 
 
@@ -206,4 +210,4 @@ fun EventCard(event: EventModel, context: Context) {
         }
     }
 }
-}
+

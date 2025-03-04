@@ -12,7 +12,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import fr.isen.ines.isensmartcompanion.screens.AppDatabase
+import fr.isen.ines.isensmartcompanion.database.AppDatabase
 import fr.isen.ines.isensmartcompanion.screens.ChatHistoryEntity
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat

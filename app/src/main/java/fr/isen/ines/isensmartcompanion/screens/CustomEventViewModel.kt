@@ -3,6 +3,7 @@ package fr.isen.ines.isensmartcompanion.screens
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
+import fr.isen.ines.isensmartcompanion.database.AppDatabase
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -33,7 +34,7 @@ class CustomEventViewModel(application: Application) : AndroidViewModel(applicat
     }
 
 
-    fun removeEvent(eventId: Int) {
+    fun removeEvent(eventId: String) {
 
         viewModelScope.launch {
             dao.deleteEvent(eventId)

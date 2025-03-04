@@ -9,5 +9,8 @@ data class CustomEventEntity(
     val title: String,
     val date: String,
     val description: String,
-    val location: String
+    val location: String,
+    val isNotified: Boolean = false
 )
+
+

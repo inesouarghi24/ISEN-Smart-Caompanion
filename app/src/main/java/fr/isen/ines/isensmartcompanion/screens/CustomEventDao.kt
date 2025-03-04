@@ -14,5 +14,10 @@ interface CustomEventDao {
     suspend fun insertCustomEvent(event: CustomEventEntity)
 
     @Query("DELETE FROM custom_events WHERE id = :eventId")
-    suspend fun deleteEvent(eventId: Int)
+    suspend fun deleteEvent(eventId: kotlin.String)
+
+
+    @Query("UPDATE custom_events SET isNotified = :isNotified WHERE id = :eventId")
+    suspend fun updateNotificationStatus(eventId: Int, isNotified: Boolean)
+
 }

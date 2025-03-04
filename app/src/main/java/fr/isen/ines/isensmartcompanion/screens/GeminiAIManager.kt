@@ -4,7 +4,7 @@ import android.content.Context
 import android.util.Log
 import com.google.ai.client.generativeai.GenerativeModel
 import fr.isen.ines.isensmartcompanion.R
-import fr.isen.ines.isensmartcompanion.screens.AppDatabase
+import fr.isen.ines.isensmartcompanion.database.AppDatabase
 import fr.isen.ines.isensmartcompanion.screens.ChatHistoryEntity
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
