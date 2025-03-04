@@ -1,7 +1,7 @@
 package fr.isen.ines.isensmartcompanion.screens
 
+import AddEventOrCourseDialog
 import android.os.Build
-import android.util.Log
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -20,12 +21,12 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import java.time.LocalDate
 import java.time.YearMonth
-import java.time.format.DateTimeParseException
 
 @RequiresApi(Build.VERSION_CODES.O)
 @OptIn(ExperimentalMaterial3Api::class)
@@ -33,38 +34,27 @@ import java.time.format.DateTimeParseException
 fun CalendarScreen(
     navController: NavHostController,
     eventsViewModel: EventsViewModel = viewModel(),
-    customEventViewModel: CustomEventViewModel = viewModel()
+    customEventViewModel: CustomEventViewModel = viewModel(),
+    courseViewModel: CourseViewModel = viewModel()
 ) {
     val events by eventsViewModel.events.collectAsState(initial = emptyList())
     val customEvents by customEventViewModel.customEvents.collectAsState(initial = emptyList())
+    val courses by courseViewModel.courses.collectAsState()
 
-    Log.d("CalendarScreen", "Événements API chargés: $events")
-    Log.d("CalendarScreen", "Événements personnalisés chargés: $customEvents")
-
-    val eventMap = remember(events) {
-        events.groupBy {
-            try {
-                LocalDate.parse(it.date)
-            } catch (e: DateTimeParseException) {
-                Log.e("CalendarScreen", "Erreur de parsing de date: ${it.date}")
-                LocalDate.now()
-            }
-        }
-    }
-
-    val context = LocalContext.current
     var selectedDate by remember { mutableStateOf(LocalDate.now()) }
-    var currentMonth by remember { mutableStateOf(YearMonth.now()) }
-    var daysInMonth by remember { mutableStateOf((1..currentMonth.lengthOfMonth()).map { currentMonth.atDay(it) }) }
+    var showDialog by remember { mutableStateOf(false) }
+    var isCourse by remember { mutableStateOf(false) }
 
-    var newEventTitle by remember { mutableStateOf("") }
-    var newEventLocation by remember { mutableStateOf("") }
+    var eventTitle by remember { mutableStateOf("") }
+    var eventLocation by remember { mutableStateOf("") }
+    var courseTime by remember { mutableStateOf("") }
+    var courseRoom by remember { mutableStateOf("") }
+    var courseSubject by remember { mutableStateOf("") }
 
-    LaunchedEffect(Unit) {
-        Log.d("CalendarScreen", "fetchEvents() est appelé")
-        eventsViewModel.fetchEvents()
-        customEventViewModel.fetchCustomEvents()
+    LaunchedEffect(selectedDate) {
+        courseViewModel.fetchCourses(selectedDate.toString())
     }
+
 
     Scaffold(
         topBar = {
@@ -87,24 +77,21 @@ fun CalendarScreen(
                 modifier = Modifier.fillMaxWidth()
             ) {
                 IconButton(onClick = {
-                    currentMonth = currentMonth.minusMonths(1)
-                    daysInMonth = (1..currentMonth.lengthOfMonth()).map { currentMonth.atDay(it) }
+                    selectedDate = selectedDate.minusMonths(1)
                 }) {
                     Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Mois précédent")
                 }
-                Text("${currentMonth.month.name} ${currentMonth.year}")
+                Text("${selectedDate.month.name} ${selectedDate.year}")
                 IconButton(onClick = {
-                    currentMonth = currentMonth.plusMonths(1)
-                    daysInMonth = (1..currentMonth.lengthOfMonth()).map { currentMonth.atDay(it) }
+                    selectedDate = selectedDate.plusMonths(1)
                 }) {
                     Icon(Icons.AutoMirrored.Filled.ArrowForward, contentDescription = "Mois suivant")
                 }
             }
 
             LazyVerticalGrid(columns = GridCells.Fixed(7), modifier = Modifier.fillMaxWidth()) {
-                items(daysInMonth.size) { index ->
-                    val day = daysInMonth[index]
-                    val hasEvent = eventMap[day]?.isNotEmpty() == true || customEvents.any { it.date == day.toString() }
+                items((1..selectedDate.lengthOfMonth()).map { selectedDate.withDayOfMonth(it) }) { day ->
+                    val hasEvent = hasEventOrCourse(day, customEvents, courses)
 
                     Box(
                         modifier = Modifier
@@ -122,8 +109,59 @@ fun CalendarScreen(
                                 Box(
                                     modifier = Modifier
                                         .size(6.dp)
-                                        .background(Color(0xFFFF69B4), shape = RoundedCornerShape(50))
+                                        .background(Color.Red, shape = RoundedCornerShape(50))
                                 )
+                            }
+                        }
+                    }
+                }
+            }
+
+
+            Spacer(modifier = Modifier.height(16.dp))
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceEvenly
+            ) {
+                Button(
+                    onClick = {
+                        isCourse = false
+                        showDialog = true
+                    },
+                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFFF69B4))
+                ) {
+                    Text("Ajouter un événement", color = Color.White)
+                }
+
+                Button(
+                    onClick = {
+                        isCourse = true
+                        showDialog = true
+                    },
+                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF00796B))
+                ) {
+                    Text("Ajouter un cours", color = Color.White)
+                }
+            }
+
+
+            if (courses.isNotEmpty()) {
+                Text("📚 Cours du jour :", style = MaterialTheme.typography.titleMedium, color = Color(0xFF00796B))
+                LazyColumn {
+                    items(courses) { course ->
+                        Card(
+                            modifier = Modifier.fillMaxWidth().padding(8.dp),
+                            colors = CardDefaults.cardColors(containerColor = Color.White)
+                        ) {
+                            Column(modifier = Modifier.padding(16.dp)) {
+                                Text("📖 ${course.subject}", fontWeight = FontWeight.Bold)
+                                Text("🕒 ${course.time} - Salle ${course.room}")
+                                Button(
+                                    onClick = { courseViewModel.removeCourse(course) },
+                                    colors = ButtonDefaults.buttonColors(containerColor = Color.Red)
+                                ) {
+                                    Text("Supprimer", color = Color.White)
+                                }
                             }
                         }
                     }
@@ -132,99 +170,29 @@ fun CalendarScreen(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            val apiEventsForSelectedDay = eventMap[selectedDate] ?: emptyList()
-            if (apiEventsForSelectedDay.isNotEmpty()) {
-                Text("📅 Événements officiels :", style = MaterialTheme.typography.titleMedium, color = Color(0xFFD81B60))
-                LazyColumn(modifier = Modifier.fillMaxWidth()) {
-                    items(apiEventsForSelectedDay) { event ->
-                        EventCard(event)
-                    }
-                }
-            }
-
-            val userEventsForSelectedDay = customEvents.filter { it.date == selectedDate.toString() }
-            if (userEventsForSelectedDay.isNotEmpty()) {
-                Text("📝 Événements personnels :", style = MaterialTheme.typography.titleMedium, color = Color(0xFF00796B))
-                LazyColumn(modifier = Modifier.fillMaxWidth()) {
-                    items(userEventsForSelectedDay) { event ->
-                        EventCard(
-                            event = EventModel(
-                                id = event.id.toString(),
-                                title = event.title,
-                                date = event.date,
-                                description = event.description,
-                                location = event.location,
-                                isCustom = true
-                            ),
-                            customEventViewModel = customEventViewModel
-                        )
-
-                    }
-                }
-            }
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            Text("Ajouter un événement :", style = MaterialTheme.typography.titleMedium)
-            OutlinedTextField(
-                value = newEventTitle,
-                onValueChange = { newEventTitle = it },
-                label = { Text("Titre de l'événement") },
-                modifier = Modifier.fillMaxWidth()
-            )
-            OutlinedTextField(
-                value = newEventLocation,
-                onValueChange = { newEventLocation = it },
-                label = { Text("Lieu de l'événement") },
-                modifier = Modifier.fillMaxWidth().padding(top = 8.dp)
-            )
-
             Button(
-                onClick = {
-                    if (newEventTitle.isNotEmpty()) {
-                        customEventViewModel.addCustomEvent(
-                            title = newEventTitle,
-                            date = selectedDate.toString(),
-                            description = "Événement ajouté par l'utilisateur",
-                            location = newEventLocation
-                        )
-                        newEventTitle = ""
-                        newEventLocation = ""
-                    }
-                },
-                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFFF69B4)),
-                modifier = Modifier.fillMaxWidth().padding(top = 8.dp)
+                onClick = { showDialog = true },
+                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFFF69B4))
             ) {
-                Text("Ajouter", color = Color.White)
+                Text("Ajouter un événement ou un cours", color = Color.White)
+            }
+
+            if (showDialog) {
+                AddEventOrCourseDialog(
+                    isCourse = isCourse,
+                    onAddEvent = { eventTitle, eventLocation ->
+                        customEventViewModel.addCustomEvent(eventTitle, selectedDate.toString(), "Ajouté", eventLocation)
+                    },
+                    onAddCourse = { time, room, subject ->
+                        courseViewModel.addCourse(selectedDate.toString(), time, room, subject)
+                    },
+                    onDismiss = { showDialog = false }
+                )
             }
         }
     }
 }
 
-@Composable
-fun EventCard(event: EventModel, customEventViewModel: CustomEventViewModel? = null) {
-    Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(8.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.White)
-    ) {
-        Column(
-            modifier = Modifier.padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
-            Text(text = event.title, style = MaterialTheme.typography.titleMedium, color = Color.Black)
-            Text(text = "📅 ${event.date}", style = MaterialTheme.typography.bodyMedium, color = Color.DarkGray)
-            Text(text = "📍 ${event.location}", style = MaterialTheme.typography.bodyMedium, color = Color.DarkGray)
-
-            if (customEventViewModel != null) {
-                Button(
-                    onClick = { customEventViewModel.removeEvent(event.id.toInt()) },
-                    colors = ButtonDefaults.buttonColors(containerColor = Color.Red)
-                ) {
-                    Text("Supprimer", color = Color.White)
-                }
-            }
-        }
-    }
+fun hasEventOrCourse(day: LocalDate, events: List<CustomEventEntity>, courses: List<CourseEntity>): Boolean {
+    return events.any { it.date == day.toString() } || courses.any { it.date == day.toString() }
 }

@@ -5,11 +5,15 @@ import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
 
-@Database(entities = [ChatHistoryEntity::class, CustomEventEntity::class], version = 2, exportSchema = false)
+@Database(
+    entities = [CustomEventEntity::class, CourseEntity::class, ChatHistoryEntity::class],
+    version = 3,
+    exportSchema = false
+)
 abstract class AppDatabase : RoomDatabase() {
-
+    abstract fun customEventDao(): CustomEventDao
+    abstract fun courseDao(): CourseDao
     abstract fun chatHistoryDao(): ChatHistoryDao
-    abstract fun customEventDao(): CustomEventDao  // Correction ici (pas de parenthèses)
 
     companion object {
         @Volatile
@@ -20,7 +24,7 @@ abstract class AppDatabase : RoomDatabase() {
                 val instance = Room.databaseBuilder(
                     context.applicationContext,
                     AppDatabase::class.java,
-                    "chat_history_database"
+                    "app_database"
                 ).fallbackToDestructiveMigration().build()
                 INSTANCE = instance
                 instance
