@@ -76,8 +76,7 @@
             </intent-filter>
         </receiver>
 
-        <service android:name=".notifications.NotificationService"
-            android:exported="false" />
+
 
 
     </application>

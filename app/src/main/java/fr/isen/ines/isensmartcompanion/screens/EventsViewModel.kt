@@ -23,7 +23,7 @@ class EventsViewModel : ViewModel() {
                     val data = response.body()
                     if (data != null) {
                         _events.value = data
-                        Log.d("API", "Données reçues: $data")
+                        Log.d("API", "Données reçues: ${_events.value}")
                     } else {
                         Log.e("API", "Réponse vide")
                     }
@@ -31,7 +31,7 @@ class EventsViewModel : ViewModel() {
                     Log.e("API", "Erreur HTTP: ${response.code()} ${response.message()}")
                 }
             } catch (e: Exception) {
-                Log.e("API", "Exception: ${e.message}")
+                Log.e("API", "Exception: ${e.message}", e)
             }
         }
     }

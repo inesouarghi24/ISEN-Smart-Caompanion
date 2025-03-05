@@ -21,7 +21,6 @@ import androidx.compose.ui.unit.dp
 fun SettingsScreen(themeViewModel: ThemeViewModel) {
     val isDarkMode by themeViewModel.isDarkMode.collectAsState(initial = false)
     var notificationsEnabled by remember { mutableStateOf(true) }
-    var privacyEnabled by remember { mutableStateOf(false) }
     var selectedLanguage by remember { mutableStateOf("Français") }
 
     val iconColor = Color(0xFFFFC0CB)
@@ -55,14 +54,7 @@ fun SettingsScreen(themeViewModel: ThemeViewModel) {
 
             Divider(modifier = Modifier.padding(vertical = 8.dp))
 
-            Text("Sécurité", style = MaterialTheme.typography.headlineSmall)
 
-            SettingSwitchItem(
-                title = "Confidentialité",
-                icon = Icons.Filled.AccountCircle,
-                checked = privacyEnabled,
-                onCheckedChange = { privacyEnabled = it }
-            )
 
             Divider(modifier = Modifier.padding(vertical = 8.dp))
 
