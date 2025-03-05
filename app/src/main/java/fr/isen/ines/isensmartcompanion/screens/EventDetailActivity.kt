@@ -10,8 +10,10 @@ import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.provider.Settings
+import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowLeft
@@ -50,7 +52,9 @@ class EventDetailActivity : ComponentActivity() {
                     date = eventDate,
                     location = eventLocation,
                     onBack = { finish() },
-                    onSetReminder = { checkAndRequestExactAlarmPermission(eventName, eventDate) }
+                    onSetReminder = { checkAndRequestExactAlarmPermission(eventName, eventDate) },
+                    onInviteFriends = { sendEmailInvitation(eventName, eventDescription, eventDate, eventLocation) },
+                    isDarkMode = isDarkMode
                 )
             }
         }
@@ -75,6 +79,39 @@ class EventDetailActivity : ComponentActivity() {
         NotificationScheduler.scheduleNotification(this, eventName, eventDate)
     }
 
+    private fun sendEmailInvitation(eventName: String, eventDescription: String, eventDate: String, eventLocation: String) {
+        val subject = "📅 Invitation à l'événement: $eventName"
+        val body = """
+            Salut !
+            
+            Je t'invite à l'événement suivant :
+            
+            📌 **$eventName**
+            📅 Date : $eventDate
+            📍 Lieu : $eventLocation
+            
+            Description :
+            $eventDescription
+            
+            Viens avec nous, ça va être super ! 🎉
+            
+            À bientôt !
+        """.trimIndent()
+
+        val intent = Intent(Intent.ACTION_SEND).apply {
+            type = "message/rfc822"
+            putExtra(Intent.EXTRA_SUBJECT, subject)
+            putExtra(Intent.EXTRA_TEXT, body)
+        }
+
+        try {
+            startActivity(Intent.createChooser(intent, "📩 Envoyer l'invitation via..."))
+        } catch (e: Exception) {
+            e.printStackTrace()
+            Toast.makeText(this, "Aucune application email trouvée", Toast.LENGTH_SHORT).show()
+        }
+    }
+
     private fun createNotificationChannel() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val channel = NotificationChannel(
@@ -95,7 +132,8 @@ class EventDetailActivity : ComponentActivity() {
 @Composable
 fun EventDetailScreen(
     name: String, description: String, date: String, location: String,
-    onBack: () -> Unit, onSetReminder: () -> Unit
+    onBack: () -> Unit, onSetReminder: () -> Unit, onInviteFriends: () -> Unit,
+    isDarkMode: Boolean
 ) {
     var isReminderSet by remember { mutableStateOf(false) }
 
@@ -108,35 +146,26 @@ fun EventDetailScreen(
                         Icon(imageVector = Icons.AutoMirrored.Filled.KeyboardArrowLeft, contentDescription = "Retour", tint = Color.White)
                     }
                 },
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = Color(0xFFFFC0CB))
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = if (isDarkMode) Color.Black else Color(0xFFFFC0CB)
+                )
             )
         }
     ) { innerPadding ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
+                .background(if (isDarkMode) Color.Black else Color.White)
                 .padding(innerPadding)
                 .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp),
             horizontalAlignment = Alignment.Start
         ) {
-            Text(text = name, fontSize = 24.sp, color = Color(0xFFD81B60))
-            Text(text = "📅 Date : $date", fontSize = 18.sp, color = Color.Black)
-            Text(text = "📍 Lieu : $location", fontSize = 18.sp, color = Color.Black)
-            Text(text = "📝 Description :", fontSize = 18.sp, color = Color(0xFFD81B60))
-            Text(text = description, fontSize = 16.sp, color = Color.Black)
-
-            Button(
-                onClick = {
-                    if (!isReminderSet) {
-                        isReminderSet = true
-                        onSetReminder()
-                    }
-                },
-                colors = ButtonDefaults.buttonColors(containerColor = if (isReminderSet) Color.Gray else Color(0xFFD81B60))
-            ) {
-                Text(if (isReminderSet) "Rappel activé ✅" else "Activer rappel ⏰")
-            }
+            Text(text = name, fontSize = 24.sp, color = if (isDarkMode) Color.White else Color(0xFFD81B60))
+            Text(text = "📅 Date : $date", fontSize = 18.sp, color = if (isDarkMode) Color.LightGray else Color.Black)
+            Text(text = "📍 Lieu : $location", fontSize = 18.sp, color = if (isDarkMode) Color.LightGray else Color.Black)
+            Text(text = "📝 Description :", fontSize = 18.sp, color = if (isDarkMode) Color.White else Color(0xFFD81B60))
+            Text(text = description, fontSize = 16.sp, color = if (isDarkMode) Color.LightGray else Color.Black)
         }
     }
 }

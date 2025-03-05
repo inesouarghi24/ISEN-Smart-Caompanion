@@ -1,5 +1,6 @@
 package fr.isen.ines.isensmartcompanion.screens
 
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material.icons.outlined.DateRange
@@ -7,6 +8,7 @@ import androidx.compose.material.icons.outlined.Home
 import androidx.compose.material.icons.outlined.Menu
 import androidx.compose.material.icons.outlined.Notifications
 import androidx.compose.material.icons.outlined.Settings
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 
 data class NavBarItem(
@@ -31,21 +33,16 @@ val navBarItems = listOf(
     ),
     NavBarItem(
         route = "events",
-        title = "évenement",
+        title = "Événement",
         selectedIcon = Icons.Filled.Notifications,
         unselectedIcon = Icons.Outlined.Notifications
-
-
-
     ),
     NavBarItem(
         route = "calendar",
         title = "Calendrier",
         selectedIcon = Icons.Filled.DateRange,
         unselectedIcon = Icons.Outlined.DateRange
-
-    ) ,
-
+    ),
     NavBarItem(
         route = "settings",
         title = "Paramètres",

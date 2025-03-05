@@ -24,8 +24,13 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 fun EventsScreen(
     eventsViewModel: EventsViewModel = viewModel(),
     customEventViewModel: CustomEventViewModel = viewModel(),
-    context: Context
+    context: Context,
+    themeViewModel: ThemeViewModel
 ) {
+    val isDarkMode by themeViewModel.isDarkMode.collectAsState(initial = false)
+    val backgroundColor = if (isDarkMode) Color.Black else Color(0xFFFFF0F5)
+    val cardColor = if (isDarkMode) Color.DarkGray else Color(0xFFFFE4E1)
+    val textColor = if (isDarkMode) Color.White else Color(0xFFD81B60)
     val events by eventsViewModel.events.collectAsState()
     val customEvents by customEventViewModel.customEvents.collectAsState()
 
@@ -39,20 +44,22 @@ fun EventsScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("🎀 Événements 🎀", fontSize = 20.sp, fontWeight = FontWeight.Bold) },
+                title = { Text("🎀 Événements 🎀", fontSize = 20.sp, fontWeight = FontWeight.Bold, color = textColor) },
                 actions = {
                     IconButton(onClick = { showCustomEvents = !showCustomEvents }) {
-                        Icon(Icons.Filled.Menu, contentDescription = "Filtrer")
+                        Icon(Icons.Filled.Menu, contentDescription = "Filtrer", tint = textColor)
                     }
                 },
-                colors = TopAppBarDefaults.mediumTopAppBarColors(containerColor = Color(0xFFFFC0CB))
+                colors = TopAppBarDefaults.mediumTopAppBarColors(
+                    containerColor = if (isDarkMode) Color.DarkGray else Color(0xFFFFC0CB)
+                )
             )
         }
     ) { paddingValues ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .background(Color(0xFFFFF0F5))
+                .background(backgroundColor)
                 .padding(paddingValues)
                 .padding(16.dp),
             horizontalAlignment = Alignment.CenterHorizontally
@@ -61,11 +68,11 @@ fun EventsScreen(
                 text = if (showCustomEvents) "🎀 Événements Personnalisés 🎀" else "📅 Événements Officiels 📅",
                 fontSize = 18.sp,
                 fontWeight = FontWeight.Bold,
-                color = Color(0xFFD81B60),
+                color = textColor,
                 modifier = Modifier.padding(8.dp)
             )
 
-            val displayedEvents: List<EventModel> = if (showCustomEvents) {
+            val displayedEvents = if (showCustomEvents) {
                 customEvents.map { event ->
                     EventModel(
                         id = event.id.toString(),
@@ -84,14 +91,14 @@ fun EventsScreen(
                 Text(
                     text = if (showCustomEvents) "🎀 Aucun événement personnalisé 🎀" else "📅 Aucun événement disponible 📅",
                     fontSize = 16.sp,
-                    color = Color(0xFFD81B60),
+                    color = textColor,
                     fontWeight = FontWeight.Medium,
                     modifier = Modifier.padding(16.dp)
                 )
             } else {
                 LazyColumn(modifier = Modifier.fillMaxWidth()) {
                     items(displayedEvents) { event ->
-                        EventCard(event = event, context = context, isCustom = showCustomEvents, customEventViewModel = customEventViewModel)
+                        EventCard(event, context, showCustomEvents, customEventViewModel, isDarkMode)
                     }
                 }
             }
@@ -100,21 +107,21 @@ fun EventsScreen(
 }
 
 @Composable
-fun EventCard(event: EventModel, context: Context, isCustom: Boolean, customEventViewModel: CustomEventViewModel) {
+fun EventCard(event: EventModel, context: Context, isCustom: Boolean, customEventViewModel: CustomEventViewModel, isDarkMode: Boolean) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
             .padding(8.dp),
-        colors = CardDefaults.cardColors(containerColor = Color(0xFFFFE4E1)),
+        colors = CardDefaults.cardColors(containerColor = if (isDarkMode) Color.DarkGray else Color(0xFFFFE4E1)),
         elevation = CardDefaults.cardElevation(8.dp)
     ) {
         Column(
             modifier = Modifier.padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            Text(text = "🎀 ${event.title}", fontSize = 18.sp, color = Color(0xFFD81B60))
-            Text(text = "📅 ${event.date}", fontSize = 16.sp, color = Color.DarkGray)
-            Text(text = "📍 ${event.location}", fontSize = 16.sp, color = Color.Gray)
+            Text(text = "🎀 ${event.title}", fontSize = 18.sp, color = if (isDarkMode) Color.White else Color(0xFFD81B60))
+            Text(text = "📅 ${event.date}", fontSize = 16.sp, color = if (isDarkMode) Color.LightGray else Color.DarkGray)
+            Text(text = "📍 ${event.location}", fontSize = 16.sp, color = if (isDarkMode) Color.LightGray else Color.Gray)
 
             Row(
                 horizontalArrangement = Arrangement.SpaceBetween,
@@ -130,7 +137,7 @@ fun EventCard(event: EventModel, context: Context, isCustom: Boolean, customEven
                         }
                         context.startActivity(intent)
                     },
-                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFFFA6C9)),
+                    colors = ButtonDefaults.buttonColors(containerColor = if (isDarkMode) Color.Magenta else Color(0xFFFFA6C9)),
                     shape = RoundedCornerShape(12.dp)
                 ) {
                     Text("Détails", color = Color.White)
@@ -139,7 +146,7 @@ fun EventCard(event: EventModel, context: Context, isCustom: Boolean, customEven
                 if (isCustom) {
                     Button(
                         onClick = { customEventViewModel.removeEvent(event.id) },
-                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFFF4081)),
+                        colors = ButtonDefaults.buttonColors(containerColor = if (isDarkMode) Color.Red else Color(0xFFFF4081)),
                         shape = RoundedCornerShape(12.dp)
                     ) {
                         Text("Supprimer", color = Color.White)

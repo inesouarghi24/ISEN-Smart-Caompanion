@@ -55,7 +55,6 @@ fun CalendarScreen(
         courseViewModel.fetchCourses(selectedDate.toString())
     }
 
-
     Scaffold(
         topBar = {
             TopAppBar(
@@ -71,52 +70,60 @@ fun CalendarScreen(
                 .padding(16.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.SpaceBetween,
-                modifier = Modifier.fillMaxWidth()
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(Color(0xFFFFE4E1), shape = RoundedCornerShape(16.dp))
+                    .padding(16.dp)
             ) {
-                IconButton(onClick = {
-                    selectedDate = selectedDate.minusMonths(1)
-                }) {
-                    Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Mois précédent")
-                }
-                Text("${selectedDate.month.name} ${selectedDate.year}")
-                IconButton(onClick = {
-                    selectedDate = selectedDate.plusMonths(1)
-                }) {
-                    Icon(Icons.AutoMirrored.Filled.ArrowForward, contentDescription = "Mois suivant")
-                }
-            }
-
-            LazyVerticalGrid(columns = GridCells.Fixed(7), modifier = Modifier.fillMaxWidth()) {
-                items((1..selectedDate.lengthOfMonth()).map { selectedDate.withDayOfMonth(it) }) { day ->
-                    val hasEvent = hasEventOrCourse(day, customEvents, courses)
-
-                    Box(
-                        modifier = Modifier
-                            .size(40.dp)
-                            .background(
-                                if (day == selectedDate) Color(0xFFFF69B4) else Color.Transparent,
-                                shape = RoundedCornerShape(50)
-                            )
-                            .clickable { selectedDate = day },
-                        contentAlignment = Alignment.Center
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        modifier = Modifier.fillMaxWidth()
                     ) {
-                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                            Text(text = day.dayOfMonth.toString(), color = Color.Black)
-                            if (hasEvent) {
-                                Box(
-                                    modifier = Modifier
-                                        .size(6.dp)
-                                        .background(Color.Red, shape = RoundedCornerShape(50))
-                                )
+                        IconButton(onClick = {
+                            selectedDate = selectedDate.minusMonths(1)
+                        }) {
+                            Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Mois précédent")
+                        }
+                        Text("${selectedDate.month.name} ${selectedDate.year}")
+                        IconButton(onClick = {
+                            selectedDate = selectedDate.plusMonths(1)
+                        }) {
+                            Icon(Icons.AutoMirrored.Filled.ArrowForward, contentDescription = "Mois suivant")
+                        }
+                    }
+
+                    LazyVerticalGrid(columns = GridCells.Fixed(7), modifier = Modifier.fillMaxWidth()) {
+                        items((1..selectedDate.lengthOfMonth()).map { selectedDate.withDayOfMonth(it) }) { day ->
+                            val hasEvent = hasEventOrCourse(day, customEvents, courses)
+
+                            Box(
+                                modifier = Modifier
+                                    .size(40.dp)
+                                    .background(
+                                        if (day == selectedDate) Color(0xFFFF69B4) else Color.Transparent,
+                                        shape = RoundedCornerShape(50)
+                                    )
+                                    .clickable { selectedDate = day },
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                                    Text(text = day.dayOfMonth.toString(), color = Color.Black)
+                                    if (hasEvent) {
+                                        Box(
+                                            modifier = Modifier
+                                                .size(6.dp)
+                                                .background(Color.Red, shape = RoundedCornerShape(50))
+                                        )
+                                    }
+                                }
                             }
                         }
                     }
                 }
             }
-
 
             Spacer(modifier = Modifier.height(16.dp))
             Row(
@@ -144,38 +151,7 @@ fun CalendarScreen(
                 }
             }
 
-
-            if (courses.isNotEmpty()) {
-                Text("📚 Cours du jour :", style = MaterialTheme.typography.titleMedium, color = Color(0xFF00796B))
-                LazyColumn {
-                    items(courses) { course ->
-                        Card(
-                            modifier = Modifier.fillMaxWidth().padding(8.dp),
-                            colors = CardDefaults.cardColors(containerColor = Color.White)
-                        ) {
-                            Column(modifier = Modifier.padding(16.dp)) {
-                                Text("📖 ${course.subject}", fontWeight = FontWeight.Bold)
-                                Text("🕒 ${course.time} - Salle ${course.room}")
-                                Button(
-                                    onClick = { courseViewModel.removeCourse(course) },
-                                    colors = ButtonDefaults.buttonColors(containerColor = Color.Red)
-                                ) {
-                                    Text("Supprimer", color = Color.White)
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-
             Spacer(modifier = Modifier.height(16.dp))
-
-            Button(
-                onClick = { showDialog = true },
-                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFFF69B4))
-            ) {
-                Text("Ajouter un événement ou un cours", color = Color.White)
-            }
 
             if (showDialog) {
                 AddEventOrCourseDialog(

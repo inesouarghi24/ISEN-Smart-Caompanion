@@ -1,6 +1,6 @@
 package fr.isen.ines.isensmartcompanion.screens
 
-import HistoryScreenView
+
 import android.content.Context
 import android.content.Intent
 import android.os.Build
@@ -11,34 +11,14 @@ import androidx.activity.compose.setContent
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.DateRange
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.material3.TextField
-import androidx.compose.material3.TextFieldDefaults
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.MutableState
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -55,6 +35,10 @@ import androidx.navigation.compose.rememberNavController
 import fr.isen.ines.isensmartcompanion.database.AppDatabase
 import fr.isen.ines.isensmartcompanion.ui.theme.ISENSmartCompanionTheme
 import kotlinx.coroutines.launch
+import fr.isen.ines.isensmartcompanion.screens.navBarItems
+
+
+
 
 class MainActivity : ComponentActivity() {
     private lateinit var database: AppDatabase
@@ -69,7 +53,6 @@ class MainActivity : ComponentActivity() {
 
         setContent {
             val navController = rememberNavController()
-
             val eventsViewModel: EventsViewModel = viewModel()
             val customEventViewModel: CustomEventViewModel = viewModel()
             val themeViewModel: ThemeViewModel = ViewModelProvider(
@@ -87,10 +70,10 @@ class MainActivity : ComponentActivity() {
                         startDestination = "home",
                         modifier = Modifier.padding(paddingValues)
                     ) {
-                        composable("home") { HomeScreenView(navController) }
-                        composable("history") { HistoryScreenView() }
-                        composable("events") { EventsScreen(eventsViewModel, customEventViewModel, this@MainActivity) }
-                        composable("calendar") { CalendarScreen(navController, eventsViewModel) }
+                        composable("home") { HomeScreenView(navController, themeViewModel) }
+                        composable("history") { HistoryScreenView(themeViewModel) }
+                        composable("events") { EventsScreen(eventsViewModel, customEventViewModel, this@MainActivity, themeViewModel) }
+                        composable("calendar") { CalendarScreen(navController, eventsViewModel, ) }
                         composable("settings") { SettingsScreen(themeViewModel) }
                     }
                 }
@@ -106,20 +89,17 @@ class MainActivity : ComponentActivity() {
 }
 
 
-
-
-
-
-
 @Composable
 fun SimpleBottomBar(question: MutableState<String>, onResponseChange: (String) -> Unit) {
     val context = LocalContext.current
+    val isDarkMode = isSystemInDarkTheme()
+
     Row(
         modifier = Modifier
             .fillMaxWidth()
             .padding(16.dp)
             .clip(RoundedCornerShape(20.dp))
-            .background(Color(0xFFFFC0CB)),
+            .background(if (isDarkMode) Color.DarkGray else Color(0xFFFFC0CB)),
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
     ) {
@@ -130,7 +110,8 @@ fun SimpleBottomBar(question: MutableState<String>, onResponseChange: (String) -
             singleLine = true,
             colors = TextFieldDefaults.colors(
                 focusedContainerColor = Color.Transparent,
-                unfocusedContainerColor = Color.Transparent
+                unfocusedContainerColor = Color.Transparent,
+                focusedTextColor = if (isDarkMode) Color.White else Color.Black
             )
         )
         Spacer(modifier = Modifier.width(8.dp))
@@ -140,7 +121,7 @@ fun SimpleBottomBar(question: MutableState<String>, onResponseChange: (String) -
                 onResponseChange("Réponse : ${question.value}")
             },
             shape = CircleShape,
-            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFFF69B4))
+            colors = ButtonDefaults.buttonColors(containerColor = if (isDarkMode) Color.Magenta else Color(0xFFFF69B4))
         ) {
             Text("➜", color = Color.White)
         }
@@ -149,12 +130,12 @@ fun SimpleBottomBar(question: MutableState<String>, onResponseChange: (String) -
 
 @Composable
 fun EventCard(event: EventModel, context: Context) {
-
+    val isDarkMode = isSystemInDarkTheme()
 
     Card(
         shape = RoundedCornerShape(16.dp),
         elevation = CardDefaults.cardElevation(defaultElevation = 8.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.White),
+        colors = CardDefaults.cardColors(containerColor = if (isDarkMode) Color.DarkGray else Color.White),
         modifier = Modifier
             .fillMaxWidth()
             .padding(horizontal = 8.dp)
@@ -167,26 +148,26 @@ fun EventCard(event: EventModel, context: Context) {
                 Icon(
                     imageVector = Icons.Default.DateRange,
                     contentDescription = "Événement",
-                    tint = Color(0xFFFF69B4),
+                    tint = if (isDarkMode) Color.White else Color(0xFFFF69B4),
                     modifier = Modifier.size(32.dp)
                 )
                 Spacer(modifier = Modifier.width(12.dp))
                 Text(
                     text = event.title,
                     style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.SemiBold),
-                    color = Color.Black
+                    color = if (isDarkMode) Color.White else Color.Black
                 )
             }
 
             Text(
                 text = "📅 ${event.date}",
                 style = MaterialTheme.typography.bodyMedium,
-                color = Color.DarkGray
+                color = if (isDarkMode) Color.LightGray else Color.DarkGray
             )
             Text(
                 text = "📍 ${event.location}",
                 style = MaterialTheme.typography.bodyMedium,
-                color = Color.DarkGray
+                color = if (isDarkMode) Color.LightGray else Color.DarkGray
             )
 
             HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
@@ -201,13 +182,14 @@ fun EventCard(event: EventModel, context: Context) {
                     }
                     context.startActivity(intent)
                 },
-                border = BorderStroke(1.dp, Color(0xFFFF69B4)),
+                border = BorderStroke(1.dp, if (isDarkMode) Color.White else Color(0xFFFF69B4)),
                 shape = RoundedCornerShape(50),
                 modifier = Modifier.align(Alignment.End)
             ) {
-                Text("Voir plus", color = Color(0xFFFF69B4))
+                Text("Voir plus", color = if (isDarkMode) Color.White else Color(0xFFFF69B4))
             }
         }
     }
 }
+
 
