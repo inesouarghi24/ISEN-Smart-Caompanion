@@ -12,7 +12,6 @@ import android.os.Bundle
 import android.provider.Settings
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowLeft
@@ -23,12 +22,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.core.app.ActivityCompat
-import androidx.core.app.NotificationCompat
-import androidx.core.app.NotificationManagerCompat
 import androidx.lifecycle.ViewModelProvider
-import coil.compose.rememberAsyncImagePainter
-import fr.isen.ines.isensmartcompanion.notifications.NotificationReceiver
+import fr.isen.ines.isensmartcompanion.notifications.NotificationScheduler
 import fr.isen.ines.isensmartcompanion.ui.theme.ISENSmartCompanionTheme
 
 class EventDetailActivity : ComponentActivity() {
@@ -55,48 +50,29 @@ class EventDetailActivity : ComponentActivity() {
                     date = eventDate,
                     location = eventLocation,
                     onBack = { finish() },
-                    onSetReminder = { checkAndRequestExactAlarmPermission(eventName) }
+                    onSetReminder = { checkAndRequestExactAlarmPermission(eventName, eventDate) }
                 )
             }
         }
     }
 
-    // 📌 Demande de permission pour les alarmes précises (API 31+)
-    private fun checkAndRequestExactAlarmPermission(eventName: String) {
+    private fun checkAndRequestExactAlarmPermission(eventName: String, eventDate: String) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
             val alarmManager = getSystemService(AlarmManager::class.java)
             if (!alarmManager.canScheduleExactAlarms()) {
                 val intent = Intent(Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM, Uri.parse("package:$packageName"))
                 startActivity(intent)
             } else {
-                scheduleNotification(eventName)
+                scheduleNotification(eventName, eventDate)
             }
         } else {
-            scheduleNotification(eventName)
+            scheduleNotification(eventName, eventDate)
         }
     }
 
     @SuppressLint("ScheduleExactAlarm")
-    private fun scheduleNotification(eventName: String) {
-        val intent = Intent(this, NotificationReceiver::class.java).apply {
-            putExtra("eventName", eventName)
-        }
-
-        val pendingIntent = PendingIntent.getBroadcast(
-            this, eventName.hashCode(), intent, PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
-        )
-
-        val alarmManager = getSystemService(Context.ALARM_SERVICE) as AlarmManager
-        val triggerTime = System.currentTimeMillis() + 10_000 // 🔥 Déclenche après 10 secondes
-
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-            val alarmManager = getSystemService(AlarmManager::class.java)
-            if (alarmManager.canScheduleExactAlarms()) {
-                alarmManager.setExact(AlarmManager.RTC_WAKEUP, triggerTime, pendingIntent)
-            }
-        } else {
-            alarmManager.setExact(AlarmManager.RTC_WAKEUP, triggerTime, pendingIntent)
-        }
+    private fun scheduleNotification(eventName: String, eventDate: String) {
+        NotificationScheduler.scheduleNotification(this, eventName, eventDate)
     }
 
     private fun createNotificationChannel() {
@@ -121,7 +97,6 @@ fun EventDetailScreen(
     name: String, description: String, date: String, location: String,
     onBack: () -> Unit, onSetReminder: () -> Unit
 ) {
-    var selectedImageUri by remember { mutableStateOf<Uri?>(null) }
     var isReminderSet by remember { mutableStateOf(false) }
 
     Scaffold(

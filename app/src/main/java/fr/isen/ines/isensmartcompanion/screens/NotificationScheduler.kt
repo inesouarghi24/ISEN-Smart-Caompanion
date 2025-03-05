@@ -9,10 +9,10 @@ import android.os.SystemClock
 
 object NotificationScheduler {
     @SuppressLint("ScheduleExactAlarm")
-    fun scheduleNotification(context: Context, eventName: String, eventDescription: String) {
+    fun scheduleNotification(context: Context, eventName: String, eventDate: String) {
         val intent = Intent(context, NotificationReceiver::class.java).apply {
-            putExtra("eventName", eventName)
-            putExtra("eventDescription", eventDescription)
+            putExtra("title", eventName)
+            putExtra("message", "Rappel: $eventName à $eventDate")
         }
 
         val pendingIntent = PendingIntent.getBroadcast(
@@ -25,7 +25,7 @@ object NotificationScheduler {
         val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
         alarmManager.setExact(
             AlarmManager.ELAPSED_REALTIME_WAKEUP,
-            SystemClock.elapsedRealtime() + 10_000,
+            SystemClock.elapsedRealtime() + 10_000,  // ⏳ Delay by 10 seconds
             pendingIntent
         )
     }
