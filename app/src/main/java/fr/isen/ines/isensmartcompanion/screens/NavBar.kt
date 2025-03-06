@@ -2,12 +2,10 @@ package fr.isen.ines.isensmartcompanion.screens
 
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.DateRange
-import androidx.compose.material.icons.filled.Home
-import androidx.compose.material.icons.filled.Menu
-import androidx.compose.material.icons.filled.Phone
-import androidx.compose.material3.*
+import androidx.compose.material3.Icon
+import androidx.compose.material3.NavigationBar
+import androidx.compose.material3.NavigationBarItem
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
@@ -22,7 +20,7 @@ fun BottomNavigationBar(navController: NavController, items: List<NavBarItem>) {
 
     NavigationBar(
         modifier = Modifier.fillMaxWidth(),
-        containerColor = if (isDarkMode) Color.Black else MaterialTheme.colorScheme.surface
+        containerColor = if (isDarkMode) Color.Black else Color(0xFFFFC0CB) // Rose en mode normal
     ) {
         items.forEach { screen ->
             val isSelected = currentRoute?.destination?.route == screen.route
@@ -38,7 +36,7 @@ fun BottomNavigationBar(navController: NavController, items: List<NavBarItem>) {
                 label = {
                     Text(
                         screen.title,
-                        color = if (isDarkMode) Color.White else Color.Unspecified
+                        color = if (isDarkMode) Color.White else Color.Black // Texte noir en mode normal
                     )
                 },
                 selected = isSelected,

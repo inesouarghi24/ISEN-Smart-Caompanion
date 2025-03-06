@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -48,7 +49,6 @@ import androidx.navigation.NavHostController
 import fr.isen.ines.isensmartcompanion.R
 import kotlinx.coroutines.launch
 
-
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreenView(navController: NavHostController, themeViewModel: ThemeViewModel) {
@@ -63,6 +63,7 @@ fun HomeScreenView(navController: NavHostController, themeViewModel: ThemeViewMo
     val responses = remember { mutableStateListOf<Pair<String, Boolean>>() }
     val aiManager = remember { GeminiAIManager(context) }
     val coroutineScope = rememberCoroutineScope()
+    val listState = rememberLazyListState() // État de la liste pour le scroll
 
     Scaffold(
         topBar = {
@@ -92,17 +93,16 @@ fun HomeScreenView(navController: NavHostController, themeViewModel: ThemeViewMo
             Image(
                 painter = painterResource(id = R.drawable.isenlogo),
                 contentDescription = "ISEN logo",
-                modifier = Modifier.size(40.dp)
+                modifier = Modifier.size(170.dp)
             )
 
-
             LazyColumn(
+                state = listState, // Ajout du LazyListState pour le scroll
                 modifier = Modifier
                     .weight(1f)
                     .fillMaxWidth()
                     .padding(8.dp),
-                verticalArrangement = Arrangement.spacedBy(8.dp),
-                reverseLayout = false
+                verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 items(responses) { (message, isUser) ->
                     AnimatedVisibility(visible = message.isNotEmpty()) {
@@ -115,8 +115,16 @@ fun HomeScreenView(navController: NavHostController, themeViewModel: ThemeViewMo
                 coroutineScope.launch {
                     if (userInput.text.isNotEmpty()) {
                         responses.add(Pair(userInput.text, true))
+
+                        // Défilement automatique après envoi du message utilisateur
+                        listState.animateScrollToItem(responses.size - 1)
+
                         val aiResponse = aiManager.analyzeText(userInput.text)
                         responses.add(Pair(aiResponse, false))
+
+                        // Défilement automatique après la réponse de l'IA
+                        listState.animateScrollToItem(responses.size - 1)
+
                         question.value = TextFieldValue("")
                     } else {
                         Toast.makeText(context, "Veuillez entrer votre message", Toast.LENGTH_SHORT).show()
@@ -181,12 +189,8 @@ fun SimpleBottomBar(
                 cursorColor = textColor,
                 focusedIndicatorColor = Color.Transparent,
                 unfocusedIndicatorColor = Color.Transparent
-
             )
         )
-
-
-
 
         Spacer(modifier = Modifier.width(8.dp))
         Button(

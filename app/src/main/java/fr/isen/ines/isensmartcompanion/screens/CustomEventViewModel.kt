@@ -38,7 +38,7 @@ class CustomEventViewModel(application: Application) : AndroidViewModel(applicat
 
         viewModelScope.launch {
             dao.deleteEvent(eventId)
-            fetchCustomEvents() // Rafraîchit la liste après suppression
+            fetchCustomEvents()
         }
     }
 }
