@@ -15,8 +15,10 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
 import fr.isen.ines.isensmartcompanion.R
 import kotlinx.coroutines.launch
@@ -25,6 +27,7 @@ import kotlinx.coroutines.launch
 @Composable
 fun HomeScreenView(navController: NavHostController, themeViewModel: ThemeViewModel) {
     val isDarkMode by themeViewModel.isDarkMode.collectAsState(initial = false)
+
     val backgroundColor = if (isDarkMode) Color.Black else Color(0xFFFFE4E1)
     val cardColor = if (isDarkMode) Color.DarkGray else Color(0xFFFFB6C1)
     val textColor = if (isDarkMode) Color.White else Color.Black
@@ -38,10 +41,19 @@ fun HomeScreenView(navController: NavHostController, themeViewModel: ThemeViewMo
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("ISEN Smart Companion", color = Color.White) },
-                colors = TopAppBarDefaults.mediumTopAppBarColors(containerColor = Color(0xFFFFC0CB))
+                title = {
+                    Text(
+                        "\uD83C\uDF80 ISEN Smart Companion \uD83C\uDF80",
+                        fontSize = 20.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = Color(0xFFD81B60)
+                    )
+                },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = Color(0xFFFFC0CB)
+                )
             )
-        },
+        }
     ) { paddingValues ->
         Column(
             modifier = Modifier

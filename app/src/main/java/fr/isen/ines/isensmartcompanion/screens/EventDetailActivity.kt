@@ -14,6 +14,7 @@ import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.background
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowLeft
@@ -25,7 +26,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.ViewModelProvider
-import fr.isen.ines.isensmartcompanion.notifications.NotificationScheduler
+import fr.isen.ines.isensmartcompanion.notifications.NotificationHelper
 import fr.isen.ines.isensmartcompanion.ui.theme.ISENSmartCompanionTheme
 
 class EventDetailActivity : ComponentActivity() {
@@ -52,31 +53,11 @@ class EventDetailActivity : ComponentActivity() {
                     date = eventDate,
                     location = eventLocation,
                     onBack = { finish() },
-                    onSetReminder = { checkAndRequestExactAlarmPermission(eventName, eventDate) },
-                    onInviteFriends = { sendEmailInvitation(eventName, eventDescription, eventDate, eventLocation) },
-                    isDarkMode = isDarkMode
+                    onSetReminder = { NotificationHelper.scheduleNotification(this, eventName) },
+                    onInviteFriends = { sendEmailInvitation(eventName, eventDescription, eventDate, eventLocation) }
                 )
             }
         }
-    }
-
-    private fun checkAndRequestExactAlarmPermission(eventName: String, eventDate: String) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-            val alarmManager = getSystemService(AlarmManager::class.java)
-            if (!alarmManager.canScheduleExactAlarms()) {
-                val intent = Intent(Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM, Uri.parse("package:$packageName"))
-                startActivity(intent)
-            } else {
-                scheduleNotification(eventName, eventDate)
-            }
-        } else {
-            scheduleNotification(eventName, eventDate)
-        }
-    }
-
-    @SuppressLint("ScheduleExactAlarm")
-    private fun scheduleNotification(eventName: String, eventDate: String) {
-        NotificationScheduler.scheduleNotification(this, eventName, eventDate)
     }
 
     private fun sendEmailInvitation(eventName: String, eventDescription: String, eventDate: String, eventLocation: String) {
@@ -94,7 +75,7 @@ class EventDetailActivity : ComponentActivity() {
             $eventDescription
             
             Viens avec nous, ça va être super ! 🎉
-            
+
             À bientôt !
         """.trimIndent()
 
@@ -132,9 +113,9 @@ class EventDetailActivity : ComponentActivity() {
 @Composable
 fun EventDetailScreen(
     name: String, description: String, date: String, location: String,
-    onBack: () -> Unit, onSetReminder: () -> Unit, onInviteFriends: () -> Unit,
-    isDarkMode: Boolean
+    onBack: () -> Unit, onSetReminder: () -> Unit, onInviteFriends: () -> Unit
 ) {
+    val isDarkMode = isSystemInDarkTheme() // ✅ Détection du mode sombre
     var isReminderSet by remember { mutableStateOf(false) }
 
     Scaffold(
@@ -166,6 +147,25 @@ fun EventDetailScreen(
             Text(text = "📍 Lieu : $location", fontSize = 18.sp, color = if (isDarkMode) Color.LightGray else Color.Black)
             Text(text = "📝 Description :", fontSize = 18.sp, color = if (isDarkMode) Color.White else Color(0xFFD81B60))
             Text(text = description, fontSize = 16.sp, color = if (isDarkMode) Color.LightGray else Color.Black)
+
+            Button(
+                onClick = {
+                    if (!isReminderSet) {
+                        isReminderSet = true
+                        onSetReminder()
+                    }
+                },
+                colors = ButtonDefaults.buttonColors(containerColor = if (isReminderSet) Color.Gray else if (isDarkMode) Color.Magenta else Color(0xFFD81B60))
+            ) {
+                Text(if (isReminderSet) "Rappel activé ✅" else "Activer rappel ⏰")
+            }
+
+            Button(
+                onClick = onInviteFriends,
+                colors = ButtonDefaults.buttonColors(containerColor = if (isDarkMode) Color.DarkGray else Color(0xFFFFC0CB))
+            ) {
+                Text("📩 Inviter des amis", color = if (isDarkMode) Color.White else Color.Black)
+            }
         }
     }
 }

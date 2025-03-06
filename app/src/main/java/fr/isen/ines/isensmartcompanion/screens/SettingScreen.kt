@@ -1,6 +1,5 @@
 package fr.isen.ines.isensmartcompanion.screens
 
-import android.os.Build
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -14,23 +13,31 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.sp
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-
 fun SettingsScreen(themeViewModel: ThemeViewModel) {
     val isDarkMode by themeViewModel.isDarkMode.collectAsState(initial = false)
-    var notificationsEnabled by remember { mutableStateOf(true) }
     var selectedLanguage by remember { mutableStateOf("Français") }
 
-    val iconColor = Color(0xFFFFC0CB)
-    val languages = listOf("Français", "Anglais", "Espagnol", "Italien", "Allemand")
+    val topBarColor = Color(0xFFFFC0CB)
+    val textColor = Color.White
+    val languages = listOf("Français", "Anglais", "Espagnol")
 
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Paramètres", color = Color.White) },
-                colors = TopAppBarDefaults.mediumTopAppBarColors(containerColor = iconColor)
+                title = {
+                    Text(
+                        text = "🎀 Paramètres 🎀",
+                        color = textColor,
+                        fontSize = 20.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+                },
+                colors = TopAppBarDefaults.mediumTopAppBarColors(containerColor = topBarColor)
             )
         }
     ) { paddingValues ->
@@ -49,12 +56,6 @@ fun SettingsScreen(themeViewModel: ThemeViewModel) {
                 checked = isDarkMode,
                 onCheckedChange = { themeViewModel.setDarkMode(it) }
             )
-
-
-
-            Divider(modifier = Modifier.padding(vertical = 8.dp))
-
-
 
             Divider(modifier = Modifier.padding(vertical = 8.dp))
 

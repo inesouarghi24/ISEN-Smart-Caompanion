@@ -5,12 +5,11 @@ import android.os.Build
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
@@ -20,13 +19,11 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import java.time.LocalDate
-import java.time.YearMonth
 
 @RequiresApi(Build.VERSION_CODES.O)
 @OptIn(ExperimentalMaterial3Api::class)
@@ -37,6 +34,8 @@ fun CalendarScreen(
     customEventViewModel: CustomEventViewModel = viewModel(),
     courseViewModel: CourseViewModel = viewModel()
 ) {
+    val isDarkMode = isSystemInDarkTheme()
+
     val events by eventsViewModel.events.collectAsState(initial = emptyList())
     val customEvents by customEventViewModel.customEvents.collectAsState(initial = emptyList())
     val courses by courseViewModel.courses.collectAsState()
@@ -45,12 +44,6 @@ fun CalendarScreen(
     var showDialog by remember { mutableStateOf(false) }
     var isCourse by remember { mutableStateOf(false) }
 
-    var eventTitle by remember { mutableStateOf("") }
-    var eventLocation by remember { mutableStateOf("") }
-    var courseTime by remember { mutableStateOf("") }
-    var courseRoom by remember { mutableStateOf("") }
-    var courseSubject by remember { mutableStateOf("") }
-
     LaunchedEffect(selectedDate) {
         courseViewModel.fetchCourses(selectedDate.toString())
     }
@@ -58,7 +51,13 @@ fun CalendarScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Calendrier") },
+                title = {
+                    Text(
+                        "📅 Calendrier 📅",
+                        fontWeight = FontWeight.Bold,
+                        color = Color(0xFFD81B60),
+                    )
+                },
                 colors = TopAppBarDefaults.mediumTopAppBarColors(containerColor = Color(0xFFFFC0CB))
             )
         }
@@ -73,7 +72,7 @@ fun CalendarScreen(
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .background(Color(0xFFFFE4E1), shape = RoundedCornerShape(16.dp))
+                    .background(if (isDarkMode) Color.DarkGray else Color(0xFFFFE4E1), shape = RoundedCornerShape(16.dp))
                     .padding(16.dp)
             ) {
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
@@ -85,13 +84,25 @@ fun CalendarScreen(
                         IconButton(onClick = {
                             selectedDate = selectedDate.minusMonths(1)
                         }) {
-                            Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Mois précédent")
+                            Icon(
+                                Icons.AutoMirrored.Filled.ArrowBack,
+                                contentDescription = "Mois précédent",
+                                tint = if (isDarkMode) Color.White else Color.Black
+                            )
                         }
-                        Text("${selectedDate.month.name} ${selectedDate.year}")
+                        Text(
+                            "${selectedDate.month.name} ${selectedDate.year}",
+                            color = if (isDarkMode) Color.White else Color.Black,
+                            fontWeight = FontWeight.Bold
+                        )
                         IconButton(onClick = {
                             selectedDate = selectedDate.plusMonths(1)
                         }) {
-                            Icon(Icons.AutoMirrored.Filled.ArrowForward, contentDescription = "Mois suivant")
+                            Icon(
+                                Icons.AutoMirrored.Filled.ArrowForward,
+                                contentDescription = "Mois suivant",
+                                tint = if (isDarkMode) Color.White else Color.Black
+                            )
                         }
                     }
 
@@ -110,7 +121,10 @@ fun CalendarScreen(
                                 contentAlignment = Alignment.Center
                             ) {
                                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                                    Text(text = day.dayOfMonth.toString(), color = Color.Black)
+                                    Text(
+                                        text = day.dayOfMonth.toString(),
+                                        color = if (isDarkMode) Color.White else Color.Black
+                                    )
                                     if (hasEvent) {
                                         Box(
                                             modifier = Modifier

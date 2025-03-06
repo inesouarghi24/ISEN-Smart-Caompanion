@@ -15,6 +15,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import fr.isen.ines.isensmartcompanion.database.AppDatabase
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
@@ -37,7 +38,7 @@ fun HistoryScreenView(themeViewModel: ThemeViewModel) {
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Historique", color = Color.White) },
+                title = { Text("\uD83C\uDF80 Historique \uD83C\uDF80", fontSize = 20.sp, fontWeight = FontWeight.Bold, color = Color(0xFFD81B60)) },
                 colors = TopAppBarDefaults.mediumTopAppBarColors(containerColor = Color(0xFFFFC0CB))
             )
         }
@@ -60,7 +61,7 @@ fun HistoryScreenView(themeViewModel: ThemeViewModel) {
             if (messages.isNotEmpty()) {
                 Button(
                     onClick = { scope.launch { dao.clearHistory() } },
-                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFFF69B4)), // Rose bonbon 🌷
+                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFFF69B4)),
                     modifier = Modifier.fillMaxWidth()
                 ) {
                     Icon(Icons.Default.Delete, contentDescription = "Supprimer tout", tint = Color.White)
@@ -87,12 +88,11 @@ fun HistoryScreenView(themeViewModel: ThemeViewModel) {
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
                                 Column(modifier = Modifier.weight(1f)) {
-                                    Text("❓ Question: ${message.question}", fontWeight = FontWeight.Bold, color = textColor)
-                                    Text("💡 Réponse: ${message.answer}", color = textColor)
-                                    Text("📅 Date: ${formatDate(message.date)}", color = Color.Gray)
+                                    Text("❓ Question: ${'$'}{message.question}", fontWeight = FontWeight.Bold, color = textColor)
+                                    Text("💡 Réponse: ${'$'}{message.answer}", color = textColor)
+                                    Text("📅 Date: ${'$'}{formatDate(message.date)}", color = Color.Gray)
                                 }
 
-                                // ✅ Bouton pour supprimer une seule entrée
                                 IconButton(
                                     onClick = { scope.launch { dao.deleteMessage(message.id) } },
                                     modifier = Modifier.size(32.dp)
