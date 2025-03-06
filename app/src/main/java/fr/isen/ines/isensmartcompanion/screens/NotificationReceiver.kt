@@ -22,7 +22,7 @@ object NotificationHelper {
         val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
         alarmManager.setExact(
             AlarmManager.ELAPSED_REALTIME_WAKEUP,
-            SystemClock.elapsedRealtime() + 10_000, 
+            SystemClock.elapsedRealtime() + 10_000,
             pendingIntent
         )
     }

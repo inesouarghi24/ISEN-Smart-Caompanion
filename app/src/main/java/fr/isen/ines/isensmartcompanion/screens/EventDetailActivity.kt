@@ -52,6 +52,7 @@ class EventDetailActivity : ComponentActivity() {
                     description = eventDescription,
                     date = eventDate,
                     location = eventLocation,
+                    isDarkMode = isDarkMode,
                     onBack = { finish() },
                     onSetReminder = { NotificationHelper.scheduleNotification(this, eventName) },
                     onInviteFriends = { sendEmailInvitation(eventName, eventDescription, eventDate, eventLocation) }
@@ -113,10 +114,14 @@ class EventDetailActivity : ComponentActivity() {
 @Composable
 fun EventDetailScreen(
     name: String, description: String, date: String, location: String,
+    isDarkMode: Boolean,
     onBack: () -> Unit, onSetReminder: () -> Unit, onInviteFriends: () -> Unit
 ) {
-    val isDarkMode = isSystemInDarkTheme() // ✅ Détection du mode sombre
     var isReminderSet by remember { mutableStateOf(false) }
+
+    val backgroundColor = if (isDarkMode) Color.Black else Color.White
+    val textColor = if (isDarkMode) Color.White else Color.Black
+    val primaryColor = if (isDarkMode) Color(0xFFBB86FC) else Color(0xFFD81B60)
 
     Scaffold(
         topBar = {
@@ -128,7 +133,7 @@ fun EventDetailScreen(
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = if (isDarkMode) Color.Black else Color(0xFFFFC0CB)
+                    containerColor = if (isDarkMode) Color.DarkGray else Color(0xFFFFC0CB)
                 )
             )
         }
@@ -136,17 +141,17 @@ fun EventDetailScreen(
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .background(if (isDarkMode) Color.Black else Color.White)
+                .background(backgroundColor)
                 .padding(innerPadding)
                 .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp),
             horizontalAlignment = Alignment.Start
         ) {
-            Text(text = name, fontSize = 24.sp, color = if (isDarkMode) Color.White else Color(0xFFD81B60))
-            Text(text = "📅 Date : $date", fontSize = 18.sp, color = if (isDarkMode) Color.LightGray else Color.Black)
-            Text(text = "📍 Lieu : $location", fontSize = 18.sp, color = if (isDarkMode) Color.LightGray else Color.Black)
-            Text(text = "📝 Description :", fontSize = 18.sp, color = if (isDarkMode) Color.White else Color(0xFFD81B60))
-            Text(text = description, fontSize = 16.sp, color = if (isDarkMode) Color.LightGray else Color.Black)
+            Text(text = name, fontSize = 24.sp, color = primaryColor)
+            Text(text = "📅 Date : $date", fontSize = 18.sp, color = textColor)
+            Text(text = "📍 Lieu : $location", fontSize = 18.sp, color = textColor)
+            Text(text = "📝 Description :", fontSize = 18.sp, color = primaryColor)
+            Text(text = description, fontSize = 16.sp, color = textColor)
 
             Button(
                 onClick = {
@@ -155,16 +160,16 @@ fun EventDetailScreen(
                         onSetReminder()
                     }
                 },
-                colors = ButtonDefaults.buttonColors(containerColor = if (isReminderSet) Color.Gray else if (isDarkMode) Color.Magenta else Color(0xFFD81B60))
+                colors = ButtonDefaults.buttonColors(containerColor = if (isReminderSet) Color.Gray else primaryColor)
             ) {
-                Text(if (isReminderSet) "Rappel activé ✅" else "Activer rappel ⏰")
+                Text(if (isReminderSet) "Rappel activé ✅" else "Activer rappel ⏰", color = Color.White)
             }
 
             Button(
                 onClick = onInviteFriends,
                 colors = ButtonDefaults.buttonColors(containerColor = if (isDarkMode) Color.DarkGray else Color(0xFFFFC0CB))
             ) {
-                Text("📩 Inviter des amis", color = if (isDarkMode) Color.White else Color.Black)
+                Text("📩 Inviter des amis", color = textColor)
             }
         }
     }
