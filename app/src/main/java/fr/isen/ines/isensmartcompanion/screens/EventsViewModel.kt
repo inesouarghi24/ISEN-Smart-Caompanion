@@ -19,11 +19,12 @@ class EventsViewModel : ViewModel() {
         viewModelScope.launch {
             try {
                 val response = EventApi.create().getEvents()
+                Log.d("API", "Réponse brute: ${response.raw()}")
                 if (response.isSuccessful) {
                     val data = response.body()
+                    Log.d("API", "Données reçues: $data")
                     if (data != null) {
                         _events.value = data
-                        Log.d("API", "Données reçues: ${_events.value}")
                     } else {
                         Log.e("API", "Réponse vide")
                     }

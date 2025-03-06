@@ -5,20 +5,40 @@ import android.media.MediaPlayer
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.compose.animation.core.*
+import androidx.compose.animation.core.LinearEasing
+import androidx.compose.animation.core.RepeatMode
+import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.rememberInfiniteTransition
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material3.LinearProgressIndicator
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -32,7 +52,6 @@ class SplashActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        // 🔊 Jouer le son au démarrage
         mediaPlayer = MediaPlayer.create(this, R.raw.startup_sound)
         mediaPlayer?.start()
 
@@ -54,26 +73,22 @@ class SplashActivity : ComponentActivity() {
 fun SplashScreen(onTimeout: () -> Unit) {
     var progress by remember { mutableStateOf(0f) }
 
-    // 🎬 Barre de chargement qui se remplit sur 3 secondes
     val animatedProgress by animateFloatAsState(
         targetValue = 1f,
         animationSpec = tween(durationMillis = 3000)
     )
 
-    // ⏳ Lancer le compte à rebours de 3 secondes
     LaunchedEffect(Unit) {
         delay(3000)
         onTimeout()
     }
 
-    // 📸 Interface Splash Screen
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color(0xFFFFC0CB)), // 🎀 Fond rose pastel
+            .background(Color(0xFFFFC0CB)),
         contentAlignment = Alignment.Center
     ) {
-        // 🌸 Sakura emojis qui tombent (augmentation du nombre)
         SakuraEmojiRain(sakuraCount = 15)
 
         Column(
@@ -83,23 +98,21 @@ fun SplashScreen(onTimeout: () -> Unit) {
         ) {
             Spacer(modifier = Modifier.weight(1f))
 
-            // 🖼️ Image centrée, arrondie comme un logo
             Image(
-                painter = painterResource(id = R.drawable.splash_image),
+                painter = painterResource(id = R.drawable.hellokitty),
                 contentDescription = "Splash Screen",
                 modifier = Modifier
                     .size(200.dp)
-                    .clip(CircleShape), // 🌸 Image arrondie
+                    .clip(CircleShape),
                 contentScale = ContentScale.Crop
             )
 
             Spacer(modifier = Modifier.height(32.dp))
 
-            // 🔄 Barre de chargement qui se remplit en rose en fonction du temps
             LinearProgressIndicator(
                 progress = animatedProgress,
-                color = Color(0xFFFF69B4), // Rose vif
-                trackColor = Color.White, // Fond blanc derrière
+                color = Color(0xFFFF69B4),
+                trackColor = Color.White,
                 modifier = Modifier
                     .fillMaxWidth(0.6f)
                     .height(6.dp)
@@ -111,13 +124,12 @@ fun SplashScreen(onTimeout: () -> Unit) {
     }
 }
 
-// 🌸 Animation des fleurs de sakura (emoji) qui tombent
 @Composable
 fun SakuraEmojiRain(sakuraCount: Int) {
     Box(modifier = Modifier.fillMaxSize()) {
         repeat(sakuraCount) { index ->
             SakuraEmojiFallingAnimation(
-                startDelay = index * 150L, // Décalage pour un effet naturel
+                startDelay = index * 150L,
                 xPosition = Random.nextFloat()
             )
         }
@@ -126,7 +138,7 @@ fun SakuraEmojiRain(sakuraCount: Int) {
 
 @Composable
 fun SakuraEmojiFallingAnimation(startDelay: Long, xPosition: Float) {
-    val fallDuration = 4000 // Temps en ms pour qu'une fleur tombe
+    val fallDuration = 4000
 
     val infiniteTransition = rememberInfiniteTransition()
     val yOffset by infiniteTransition.animateFloat(
