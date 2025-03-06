@@ -25,3 +25,5 @@ Avant de commencer, assurez-vous d'avoir les éléments suivants installés :
    ```bash
    git clone https://github.com/inesouarghi24/ISEN-Smart-Caompanion.git
    cd ISEN-Smart-Caompanion
+
+veuillez mettre en mode clair afin de bien voir toute les options et comparer le mode sombre et une deuxieme options .
