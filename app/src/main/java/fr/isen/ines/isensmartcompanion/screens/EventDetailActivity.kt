@@ -1,20 +1,15 @@
 package fr.isen.ines.isensmartcompanion.screens
 
-import android.Manifest
-import android.annotation.SuppressLint
-import android.app.*
+import android.app.NotificationChannel
+import android.app.NotificationManager
 import android.content.Context
 import android.content.Intent
-import android.content.pm.PackageManager
-import android.net.Uri
 import android.os.Build
 import android.os.Bundle
-import android.provider.Settings
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.background
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowLeft
@@ -55,6 +50,7 @@ class EventDetailActivity : ComponentActivity() {
                     isDarkMode = isDarkMode,
                     onBack = { finish() },
                     onSetReminder = { NotificationHelper.scheduleNotification(this, eventName) },
+                    onCancelReminder = { NotificationHelper.cancelNotification(this, eventName) },
                     onInviteFriends = { sendEmailInvitation(eventName, eventDescription, eventDate, eventLocation) }
                 )
             }
@@ -62,21 +58,21 @@ class EventDetailActivity : ComponentActivity() {
     }
 
     private fun sendEmailInvitation(eventName: String, eventDescription: String, eventDate: String, eventLocation: String) {
-        val subject = "📅 Invitation à l'événement: $eventName"
+        val subject = "\ud83d\udcc5 Invitation à l'événement: $eventName"
         val body = """
             Salut !
             
             Je t'invite à l'événement suivant :
             
-            📌 **$eventName**
-            📅 Date : $eventDate
-            📍 Lieu : $eventLocation
+            \ud83d\udccc **$eventName**
+            \ud83d\udcc5 Date : $eventDate
+            \ud83d\udccd Lieu : $eventLocation
             
             Description :
             $eventDescription
             
-            Viens avec nous, ça va être super ! 🎉
-
+            Viens avec nous, ça va être super ! \ud83c\udf89
+            
             À bientôt !
         """.trimIndent()
 
@@ -87,7 +83,7 @@ class EventDetailActivity : ComponentActivity() {
         }
 
         try {
-            startActivity(Intent.createChooser(intent, "📩 Envoyer l'invitation via..."))
+            startActivity(Intent.createChooser(intent, "\ud83d\udce9 Envoyer l'invitation via..."))
         } catch (e: Exception) {
             e.printStackTrace()
             Toast.makeText(this, "Aucune application email trouvée", Toast.LENGTH_SHORT).show()
@@ -115,7 +111,7 @@ class EventDetailActivity : ComponentActivity() {
 fun EventDetailScreen(
     name: String, description: String, date: String, location: String,
     isDarkMode: Boolean,
-    onBack: () -> Unit, onSetReminder: () -> Unit, onInviteFriends: () -> Unit
+    onBack: () -> Unit, onSetReminder: () -> Unit, onCancelReminder: () -> Unit, onInviteFriends: () -> Unit
 ) {
     var isReminderSet by remember { mutableStateOf(false) }
 
@@ -148,9 +144,9 @@ fun EventDetailScreen(
             horizontalAlignment = Alignment.Start
         ) {
             Text(text = name, fontSize = 24.sp, color = primaryColor)
-            Text(text = "📅 Date : $date", fontSize = 18.sp, color = textColor)
-            Text(text = "📍 Lieu : $location", fontSize = 18.sp, color = textColor)
-            Text(text = "📝 Description :", fontSize = 18.sp, color = primaryColor)
+            Text(text = "\ud83d\udcc5 Date : $date", fontSize = 18.sp, color = textColor)
+            Text(text = "\ud83d\udccd Lieu : $location", fontSize = 18.sp, color = textColor)
+            Text(text = "\ud83d\udcdd Description :", fontSize = 18.sp, color = primaryColor)
             Text(text = description, fontSize = 16.sp, color = textColor)
 
             Button(
@@ -158,18 +154,21 @@ fun EventDetailScreen(
                     if (!isReminderSet) {
                         isReminderSet = true
                         onSetReminder()
+                    } else {
+                        isReminderSet = false
+                        onCancelReminder()
                     }
                 },
-                colors = ButtonDefaults.buttonColors(containerColor = if (isReminderSet) Color.Gray else primaryColor)
+                colors = ButtonDefaults.buttonColors(containerColor = primaryColor)
             ) {
-                Text(if (isReminderSet) "Rappel activé ✅" else "Activer rappel ⏰", color = Color.White)
+                Text(if (isReminderSet) "Désactiver rappel ❌" else "Activer rappel ⏰", color = Color.White)
             }
 
             Button(
                 onClick = onInviteFriends,
                 colors = ButtonDefaults.buttonColors(containerColor = if (isDarkMode) Color.DarkGray else Color(0xFFFFC0CB))
             ) {
-                Text("📩 Inviter des amis", color = textColor)
+                Text("\ud83d\udce9 Inviter des amis", color = textColor)
             }
         }
     }

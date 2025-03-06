@@ -18,9 +18,11 @@ class CourseViewModel(application: Application) : AndroidViewModel(application) 
 
     fun fetchCourses(date: String) {
         viewModelScope.launch(Dispatchers.IO) {
-            _courses.value = dao.getCoursesByDate(date)
+            val coursesList = dao.getCoursesByDate(date)
+            _courses.value = coursesList
         }
     }
+
 
 
 

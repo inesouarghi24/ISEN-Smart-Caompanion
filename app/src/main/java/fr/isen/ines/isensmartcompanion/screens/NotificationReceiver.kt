@@ -26,4 +26,19 @@ object NotificationHelper {
             pendingIntent
         )
     }
+
+    fun cancelNotification(context: Context, eventName: String) {
+        val intent = Intent(context, NotificationReceiver::class.java)
+        val pendingIntent = PendingIntent.getBroadcast(
+            context,
+            eventName.hashCode(),
+            intent,
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+        )
+
+        val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
+        alarmManager.cancel(pendingIntent)
+        pendingIntent.cancel()
+    }
 }
+

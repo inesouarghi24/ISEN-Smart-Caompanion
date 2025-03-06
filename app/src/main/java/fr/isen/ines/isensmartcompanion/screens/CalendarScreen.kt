@@ -10,6 +10,8 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
@@ -44,7 +46,7 @@ fun CalendarScreen(
     var showDialog by remember { mutableStateOf(false) }
     var isCourse by remember { mutableStateOf(false) }
 
-    LaunchedEffect(selectedDate) {
+    LaunchedEffect(selectedDate, courses) {
         courseViewModel.fetchCourses(selectedDate.toString())
     }
 
@@ -167,14 +169,25 @@ fun CalendarScreen(
 
             Spacer(modifier = Modifier.height(16.dp))
 
+            LazyColumn {
+                items(customEvents.filter { it.date == selectedDate.toString() }) { event ->
+                    Text(text = "📅 Événement : ${event.title} - ${event.location}")
+                }
+                items(courses.filter { it.date == selectedDate.toString() }) { course ->
+                    Text(text = "📖 Cours : ${course.subject} - Salle : ${course.room} - Heure : ${course.time}")
+                }
+            }
+
             if (showDialog) {
                 AddEventOrCourseDialog(
                     isCourse = isCourse,
                     onAddEvent = { eventTitle, eventLocation ->
                         customEventViewModel.addCustomEvent(eventTitle, selectedDate.toString(), "Ajouté", eventLocation)
+                        courseViewModel.fetchCourses(selectedDate.toString())
                     },
                     onAddCourse = { time, room, subject ->
                         courseViewModel.addCourse(selectedDate.toString(), time, room, subject)
+                        courseViewModel.fetchCourses(selectedDate.toString())
                     },
                     onDismiss = { showDialog = false }
                 )
